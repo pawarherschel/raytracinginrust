@@ -1,10 +1,11 @@
 use std::io::{stderr, Write};
 
 use raytracing::lerp;
+use raytracing::white;
 use raytracing::Ray;
 use raytracing::{color, Color};
 use raytracing::{point3, Point3};
-use raytracing::{vec3, Vec3};
+use raytracing::{x, y, z};
 
 static ASPECT_RATIO: f64 = 16.0 / 9.0;
 static IMAGE_WIDTH: u64 = 256;
@@ -19,12 +20,10 @@ fn main() {
     println!("255");
 
     let origin = point3![0];
-    let horizontal = vec3![VIEWPORT_WIDTH, 0, 0];
-    let vertical = vec3![0, VIEWPORT_HEIGHT, 0];
-    let lower_left_corner = origin.clone()
-        - horizontal.clone() / 2.0
-        - vertical.clone() / 2.0
-        - vec3![0, 0, FOCAL_LENGTH];
+    let horizontal = x!(VIEWPORT_WIDTH);
+    let vertical = y!(VIEWPORT_HEIGHT);
+    let lower_left_corner =
+        origin.clone() - horizontal.clone() / 2.0 - vertical.clone() / 2.0 + z!(FOCAL_LENGTH);
 
     for j in (0..IMAGE_HEIGHT).rev() {
         eprintln!("Scanlines remaining: {}", j);
@@ -48,7 +47,7 @@ fn main() {
     eprintln!("\x07Done");
 }
 
-pub fn hit_circle(center: &Point3, radius: f64, r: &Ray) -> bool {
+pub fn hit_circle(center: &Point3, radius: f64, r: &Ray) -> Option<f64> {
     let oc = r.get_origin() - center.clone();
     let r_direction = r.get_direction();
 
@@ -58,16 +57,22 @@ pub fn hit_circle(center: &Point3, radius: f64, r: &Ray) -> bool {
 
     let discriminant = b * b - 4.0 * a * c;
 
-    discriminant > 0.0
+    if discriminant < 0.0 {
+        None
+    } else {
+        Some((-b - discriminant.sqrt()) / (2.0 * a))
+    }
 }
 
 pub fn ray_color(r: &Ray) -> Color {
-    if hit_circle(&point3!(0, 0, -1), 0.5, r) {
-        return color![1, 0, 0];
+    let sphere_origin = z!(1);
+    if let Some(t) = hit_circle(&sphere_origin, 0.5, r) {
+        let n = (r.at(t) - sphere_origin).normalize();
+        return 0.5 * (n + 1.0);
     }
 
     let direction = r.get_direction();
     let t = 0.5 * (direction.y() + 1.0);
 
-    lerp!(color![1], t, color![0.5, 0.7, 1])
+    lerp!(white!(), t, color![0.5, 0.7, 1])
 }
