@@ -1,8 +1,10 @@
 use std::fmt::{Display, Formatter};
-use std::ops::{Add, AddAssign, Div, DivAssign, Index, IndexMut, Mul, MulAssign, Sub, SubAssign};
+use std::ops::{
+    Add, AddAssign, Div, DivAssign, Index, IndexMut, Mul, MulAssign, Neg, Sub, SubAssign,
+};
 
 #[derive(Clone, Default, Debug, PartialOrd, PartialEq)]
-pub struct Vec3([f64; 3]);
+pub struct Vec3(pub [f64; 3]);
 
 impl Vec3 {
     pub fn new(a: f64, b: f64, c: f64) -> Self {
@@ -88,6 +90,22 @@ impl Add<&Vec3> for f64 {
     }
 }
 
+impl Neg for Vec3 {
+    type Output = Vec3;
+
+    fn neg(self) -> Self::Output {
+        -1.0 * self
+    }
+}
+
+impl Neg for &Vec3 {
+    type Output = Vec3;
+
+    fn neg(self) -> Self::Output {
+        -1.0 * self
+    }
+}
+
 impl Sub<Vec3> for Vec3 {
     type Output = Vec3;
 
@@ -152,9 +170,15 @@ impl Sub<&Vec3> for f64 {
     }
 }
 
-// Vec3 - &Vec3
-
 impl Sub<&Vec3> for Vec3 {
+    type Output = Vec3;
+
+    fn sub(self, rhs: &Vec3) -> Self::Output {
+        Vec3::new(self[0] - rhs[0], self[1] - rhs[1], self[2] - rhs[2])
+    }
+}
+
+impl Sub<&Vec3> for &Vec3 {
     type Output = Vec3;
 
     fn sub(self, rhs: &Vec3) -> Self::Output {

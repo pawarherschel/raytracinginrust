@@ -78,3 +78,13 @@ mod map_tests {
         assert_eq!(expected, actual);
     }
 }
+
+#[macro_export]
+macro_rules! value {
+    ($value: expr, between: $min: expr, and $max: expr) => {{
+        $min < $value && $value < $max
+    }};
+    ($value: expr, not between: $min: expr, and $max: expr) => {{
+        $value < $min || $max < $value
+    }};
+}
