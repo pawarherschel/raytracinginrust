@@ -35,18 +35,6 @@ fn main() {
         stderr().flush().unwrap();
 
         for i in 0..IMAGE_WIDTH {
-            // let u = (i as f64) / ((IMAGE_WIDTH - 1) as f64);
-            // let v = (j as f64) / ((IMAGE_HEIGHT - 1) as f64);
-            //
-            // let r = Ray::new(
-            //     ORIGIN.clone(),
-            //     LOWER_LEFT_CORNER + u * HORIZONTAL + v * VERTICAL - ORIGIN,
-            // );
-            //
-            // let pixel_color = ray_color(&r, &world);
-            //
-            // println!("{}", pixel_color.fmt_color());
-
             let mut pixel_color = color![0];
             for _ in 0..SAMPLES_PER_PIXEL {
                 let random_u: f64 = rng.gen();
@@ -56,6 +44,7 @@ fn main() {
                 let v = ((j as f64) + random_v) / ((IMAGE_HEIGHT - 1) as f64);
 
                 let ray = camera.get_ray(u, v);
+
                 pixel_color += ray_color(&ray, &world);
             }
 

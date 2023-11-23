@@ -15,7 +15,7 @@ impl Sphere {
 
 impl Hittable for Sphere {
     fn hit(&self, ray: &Ray, t_min: f64, t_max: f64) -> Option<HitRecord> {
-        let oc = ray.get_origin() - &self.center;
+        let oc = &ray.origin - &self.center;
         let r_direction = ray.get_direction_denormalized();
 
         let a = r_direction.length().powi(2);
