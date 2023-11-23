@@ -1,0 +1,1 @@
+cargo run > img.ppm
