@@ -1,33 +1,17 @@
 use std::io::{stderr, Write};
 
-use raytracing::{color, Color};
-use raytracing::{lerp, remap};
-use raytracing::{point3, Point3};
-use raytracing::{x, y, z};
+use rand::Rng;
+
+use raytracing::camera::Camera;
+use raytracing::config::{IMAGE_HEIGHT, IMAGE_WIDTH, SAMPLES_PER_PIXEL};
 use raytracing::hit::Hittable;
-use raytracing::Ray;
 use raytracing::sphere::Sphere;
 use raytracing::white;
 use raytracing::world::World;
-
-// IMAGE
-static ASPECT_RATIO: f64 = 16.0 / 9.0;
-static IMAGE_WIDTH: u64 = 256;
-static IMAGE_HEIGHT: u64 = (IMAGE_WIDTH as f64 / ASPECT_RATIO) as u64;
-
-// CAMERA
-static VIEWPORT_HEIGHT: f64 = 2.0;
-static VIEWPORT_WIDTH: f64 = VIEWPORT_HEIGHT * ASPECT_RATIO;
-static FOCAL_LENGTH: f64 = 1.0;
-static ORIGIN: &Point3 = &point3![0];
-static HORIZONTAL: &Point3 = &x!(VIEWPORT_WIDTH);
-static VERTICAL: &Point3 = &y!(VIEWPORT_HEIGHT);
-static LOWER_LEFT_CORNER: &Point3 = &point3![
-    ORIGIN.0[0] - HORIZONTAL.0[0] / 2.0 - VERTICAL.0[0] / 2.0 + z!(FOCAL_LENGTH).0[0],
-    ORIGIN.0[1] - HORIZONTAL.0[1] / 2.0 - VERTICAL.0[1] / 2.0 + z!(FOCAL_LENGTH).0[1],
-    ORIGIN.0[2] - HORIZONTAL.0[2] / 2.0 - VERTICAL.0[2] / 2.0 + z!(FOCAL_LENGTH).0[2]
-];
-// &(ORIGIN - HORIZONTAL / 2.0 - VERTICAL / 2.0 + z!(FOCAL_LENGTH));
+use raytracing::Point3;
+use raytracing::Ray;
+use raytracing::{color, Color};
+use raytracing::{lerp, remap};
 
 fn main() {
     // World
@@ -36,6 +20,12 @@ fn main() {
         Box::new(Sphere::new(Point3::new(0.0, -100.5, -1.0), 100.0)),
     ];
 
+    // Camera
+    let camera = Camera::new();
+
+    // RNG
+    let mut rng = rand::thread_rng();
+
     println!("P3");
     println!("{} {}", IMAGE_WIDTH, IMAGE_HEIGHT);
     println!("255");
@@ -43,16 +33,31 @@ fn main() {
     for j in (0..IMAGE_HEIGHT).rev() {
         eprintln!("Scanlines remaining: {}", j);
         stderr().flush().unwrap();
+
         for i in 0..IMAGE_WIDTH {
-            let u = (i as f64) / ((IMAGE_WIDTH - 1) as f64);
-            let v = (j as f64) / ((IMAGE_HEIGHT - 1) as f64);
+            // let u = (i as f64) / ((IMAGE_WIDTH - 1) as f64);
+            // let v = (j as f64) / ((IMAGE_HEIGHT - 1) as f64);
+            //
+            // let r = Ray::new(
+            //     ORIGIN.clone(),
+            //     LOWER_LEFT_CORNER + u * HORIZONTAL + v * VERTICAL - ORIGIN,
+            // );
+            //
+            // let pixel_color = ray_color(&r, &world);
+            //
+            // println!("{}", pixel_color.fmt_color());
 
-            let r = Ray::new(
-                ORIGIN.clone(),
-                LOWER_LEFT_CORNER + u * HORIZONTAL + v * VERTICAL - ORIGIN,
-            );
+            let mut pixel_color = color![0];
+            for _ in 0..SAMPLES_PER_PIXEL {
+                let random_u: f64 = rng.gen();
+                let random_v: f64 = rng.gen();
 
-            let pixel_color = ray_color(&r, &world);
+                let u = ((i as f64) + random_u) / ((IMAGE_WIDTH - 1) as f64);
+                let v = ((j as f64) + random_v) / ((IMAGE_HEIGHT - 1) as f64);
+
+                let ray = camera.get_ray(u, v);
+                pixel_color += ray_color(&ray, &world);
+            }
 
             println!("{}", pixel_color.fmt_color());
         }

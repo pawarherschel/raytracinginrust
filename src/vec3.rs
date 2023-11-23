@@ -3,6 +3,8 @@ use std::ops::{
     Add, AddAssign, Div, DivAssign, Index, IndexMut, Mul, MulAssign, Neg, Sub, SubAssign,
 };
 
+use crate::config::SAMPLES_PER_PIXEL;
+
 #[derive(Clone, Default, Debug, PartialOrd, PartialEq)]
 pub struct Vec3(pub [f64; 3]);
 
@@ -350,12 +352,9 @@ impl Display for Vec3 {
 
 impl Vec3 {
     pub fn fmt_color(&self) -> String {
-        let color = self * 255.999;
-        format!(
-            "{} {} {}",
-            color.r() as u64,
-            color.g() as u64,
-            color.b() as u64
-        )
+        let r = (256_f64 * (self.r() / SAMPLES_PER_PIXEL as f64).clamp(0.0, 0.999)) as u64;
+        let g = (256_f64 * (self.g() / SAMPLES_PER_PIXEL as f64).clamp(0.0, 0.999)) as u64;
+        let b = (256_f64 * (self.b() / SAMPLES_PER_PIXEL as f64).clamp(0.0, 0.999)) as u64;
+        format!("{} {} {}", r, g, b)
     }
 }

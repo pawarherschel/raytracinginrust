@@ -1,5 +1,7 @@
 #![allow(unused)]
 
+pub mod camera;
+pub mod config;
 pub mod hit;
 pub mod math;
 pub mod ray;
