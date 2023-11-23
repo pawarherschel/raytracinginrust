@@ -1,10 +1,13 @@
 #![allow(unused)]
 
-mod math;
-mod ray;
-mod vec3;
+pub mod geometry {
+    pub mod ray;
+    pub mod vec3;
+}
 
-pub type Vec3 = vec3::Vec3;
+pub mod math;
+
+pub type Vec3 = geometry::vec3::Vec3;
 #[macro_export]
 macro_rules! vec3 {
     ($l: expr) => {{
@@ -37,4 +40,4 @@ macro_rules! point3 {
     }};
 }
 
-pub type Ray = ray::Ray;
+pub type Ray = geometry::ray::Ray;
