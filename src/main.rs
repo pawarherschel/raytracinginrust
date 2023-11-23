@@ -47,18 +47,18 @@ fn main() {
 
 pub fn hit_circle(center: &Point3, radius: f64, r: &Ray) -> Option<f64> {
     let oc = r.get_origin() - center.clone();
-    let r_direction = r.get_direction();
+    let r_direction = r.get_direction_denormalized();
 
-    let a = r_direction.dot(&r_direction);
-    let b = 2.0 * oc.dot(&r_direction);
-    let c = oc.dot(&oc) - radius * radius;
+    let a = r_direction.length().powi(2);
+    let half_b = oc.dot(&r_direction);
+    let c = oc.length().powi(2) - radius.powi(2);
 
-    let discriminant = b * b - 4.0 * a * c;
+    let discriminant = half_b.powi(2) - a * c;
 
     if discriminant < 0.0 {
         None
     } else {
-        Some((-b - discriminant.sqrt()) / (2.0 * a))
+        Some((-half_b - discriminant.sqrt()) / a)
     }
 }
 

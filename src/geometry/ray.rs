@@ -22,4 +22,8 @@ impl Ray {
     pub fn get_direction(&self) -> Point3 {
         self.direction.clone().normalize()
     }
+
+    pub fn get_direction_denormalized(&self) -> Point3 {
+        self.direction.clone()
+    }
 }
