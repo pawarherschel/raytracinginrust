@@ -1,9 +1,9 @@
 use std::io::{stderr, Write};
 
-use raytracing::lerp;
 use raytracing::white;
 use raytracing::Ray;
 use raytracing::{color, Color};
+use raytracing::{lerp, remap};
 use raytracing::{point3, Point3};
 use raytracing::{x, y, z};
 
@@ -22,8 +22,7 @@ fn main() {
     let origin = point3![0];
     let horizontal = x!(VIEWPORT_WIDTH);
     let vertical = y!(VIEWPORT_HEIGHT);
-    let lower_left_corner =
-        origin.clone() - horizontal.clone() / 2.0 - vertical.clone() / 2.0 + z!(FOCAL_LENGTH);
+    let lower_left_corner = &origin - &horizontal / 2.0 - &vertical / 2.0 + z!(FOCAL_LENGTH);
 
     for j in (0..IMAGE_HEIGHT).rev() {
         eprintln!("Scanlines remaining: {}", j);
@@ -34,8 +33,7 @@ fn main() {
 
             let r = Ray::new(
                 origin.clone(),
-                lower_left_corner.clone() + u * horizontal.clone() + v * vertical.clone()
-                    - origin.clone(),
+                &lower_left_corner + u * &horizontal + v * &vertical - &origin,
             );
 
             let pixel_color = ray_color(&r);
@@ -64,15 +62,16 @@ pub fn hit_circle(center: &Point3, radius: f64, r: &Ray) -> Option<f64> {
     }
 }
 
-pub fn ray_color(r: &Ray) -> Color {
+pub fn ray_color(ray: &Ray) -> Color {
     let sphere_origin = z!(1);
-    if let Some(t) = hit_circle(&sphere_origin, 0.5, r) {
-        let n = (r.at(t) - sphere_origin).normalize();
-        return 0.5 * (n + 1.0);
+    let sphere_radius = 0.5;
+    if let Some(t) = hit_circle(&sphere_origin, sphere_radius, ray) {
+        let normal_direction = (ray.at(t) - sphere_origin).normalize();
+        return remap!(value: normal_direction, from: -1_f64, 1_f64, to: 0_f64, 1_f64);
     }
 
-    let direction = r.get_direction();
-    let t = 0.5 * (direction.y() + 1.0);
+    let direction = ray.get_direction();
+    let t = remap!(value: direction.y(), from: -1_f64, 1_f64, to: 0_f64, 1_f64);
 
     lerp!(white!(), t, color![0.5, 0.7, 1])
 }

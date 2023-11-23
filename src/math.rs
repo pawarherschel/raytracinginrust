@@ -4,3 +4,77 @@ macro_rules! lerp {
         (1_f64 - $t) * $start + $t * $end
     }};
 }
+
+#[macro_export]
+macro_rules! remap {
+    (value: $value: expr, from: $min1: expr, $max1: expr, to: $min2: expr, $max2: expr) => {{
+        let value = $value;
+        let min1 = $min1;
+        let max1 = $max1;
+        let min2 = $min2;
+        let max2 = $max2;
+
+        min2 + (value - min1) * (max2 - min2) / (max1 - min1)
+    }};
+}
+
+#[cfg(test)]
+mod map_tests {
+    use crate::{color, Color};
+
+    #[test]
+    fn test0() {
+        let value = 0_f64;
+        let min1 = -1_f64;
+        let max1 = 1_f64;
+        let min2 = 0_f64;
+        let max2 = 1_f64;
+
+        let expected = 0.5;
+        let actual = remap!(value: value, from: min1, max1, to: min2, max2);
+
+        assert_eq!(expected, actual);
+    }
+
+    #[test]
+    fn test1() {
+        let value = 0.5_f64;
+        let min1 = -1_f64;
+        let max1 = 1_f64;
+        let min2 = 0_f64;
+        let max2 = 1_f64;
+
+        let expected = 0.75;
+        let actual = remap!(value: value, from: min1, max1, to: min2, max2);
+
+        assert_eq!(expected, actual);
+    }
+
+    #[test]
+    fn test2() {
+        let value: Color = color!(0);
+        let min1 = -1_f64;
+        let max1 = 1_f64;
+        let min2 = 0_f64;
+        let max2 = 1_f64;
+
+        let expected = color!(0.5);
+        let actual = remap!(value: value, from: min1, max1, to: min2, max2);
+
+        assert_eq!(expected, actual);
+    }
+
+    #[test]
+    fn test3() {
+        let value: Color = color!(0.5);
+        let min1 = -1_f64;
+        let max1 = 1_f64;
+        let min2 = 0_f64;
+        let max2 = 1_f64;
+
+        let expected = color!(0.75);
+        let actual = remap!(value: value, from: min1, max1, to: min2, max2);
+
+        assert_eq!(expected, actual);
+    }
+}
