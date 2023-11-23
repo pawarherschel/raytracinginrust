@@ -48,7 +48,24 @@ fn main() {
     eprintln!("\x07Done");
 }
 
+pub fn hit_circle(center: &Point3, radius: f64, r: &Ray) -> bool {
+    let oc = r.get_origin() - center.clone();
+    let r_direction = r.get_direction();
+
+    let a = r_direction.dot(&r_direction);
+    let b = 2.0 * oc.dot(&r_direction);
+    let c = oc.dot(&oc) - radius * radius;
+
+    let discriminant = b * b - 4.0 * a * c;
+
+    discriminant > 0.0
+}
+
 pub fn ray_color(r: &Ray) -> Color {
+    if hit_circle(&point3!(0, 0, -1), 0.5, r) {
+        return color![1, 0, 0];
+    }
+
     let direction = r.get_direction();
     let t = 0.5 * (direction.y() + 1.0);
 
