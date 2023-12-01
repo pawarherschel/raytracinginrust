@@ -9,6 +9,7 @@ pub struct Camera {
 }
 
 impl Default for Camera {
+    #[inline(always)]
     fn default() -> Self {
         Camera {
             origin: crate::config::ORIGIN.clone(),
@@ -20,10 +21,12 @@ impl Default for Camera {
 }
 
 impl Camera {
+    #[inline(always)]
     pub fn new() -> Self {
         Self::default()
     }
 
+    #[inline(always)]
     pub fn get_ray(&self, u: f64, v: f64) -> Ray {
         Ray::new(
             self.origin.clone(),

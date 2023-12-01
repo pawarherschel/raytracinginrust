@@ -1,5 +1,6 @@
 use indicatif::{ProgressBar, ProgressStyle};
 
+#[inline(always)]
 pub fn get_pb(len: u64, msg: &'static str) -> ProgressBar {
     let pb = ProgressBar::new(len);
 

@@ -16,6 +16,7 @@ unsafe impl Send for Sphere {}
 unsafe impl Sync for Sphere {}
 
 impl Sphere {
+    #[inline(always)]
     pub fn new(center: Point3, radius: f64, material: Arc<dyn Scatter>) -> Self {
         Sphere {
             center,
@@ -26,6 +27,7 @@ impl Sphere {
 }
 
 impl Hittable for Sphere {
+    #[inline(always)]
     fn hit(&self, ray: &Ray, t_min: f64, t_max: f64) -> Option<HitRecord> {
         let oc = &ray.origin - &self.center;
         let r_direction = ray.get_direction_denormalized();

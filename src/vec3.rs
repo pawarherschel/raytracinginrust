@@ -12,16 +12,16 @@ use crate::{
 };
 
 #[derive(Clone, Default, Debug, PartialOrd, PartialEq)]
-pub struct IVec3(pub [f64; 3]);
+pub struct Vec3(pub [f64; 3]);
 
-impl IVec3 {
+impl Vec3 {
     #[inline(always)]
     pub fn new(a: f64, b: f64, c: f64) -> Self {
         Self([a, b, c])
     }
 }
 
-impl IVec3 {
+impl Vec3 {
     #[inline(always)]
     pub fn x(&self) -> f64 {
         self[0]
@@ -49,15 +49,15 @@ impl IVec3 {
     }
 }
 
-impl IVec3 {
+impl Vec3 {
     #[inline(always)]
-    pub fn dot(&self, rhs: &IVec3) -> f64 {
+    pub fn dot(&self, rhs: &Vec3) -> f64 {
         self.x() * rhs.x() + self.y() * rhs.y() + self.z() * rhs.z()
     }
 
     #[inline(always)]
-    pub fn cross(&self, rhs: &IVec3) -> IVec3 {
-        IVec3::new(
+    pub fn cross(&self, rhs: &Vec3) -> Vec3 {
+        Vec3::new(
             self.y() * rhs.z() - self.z() * rhs.y(),
             self.z() * rhs.x() - self.x() * rhs.z(),
             self.x() * rhs.y() - self.y() * rhs.x(),
@@ -70,7 +70,7 @@ impl IVec3 {
     }
 
     #[inline(always)]
-    pub fn normalize(&self) -> IVec3 {
+    pub fn normalize(&self) -> Vec3 {
         self.clone() / self.length()
     }
 
@@ -89,18 +89,18 @@ impl IVec3 {
     }
 }
 
-impl IVec3 {
+impl Vec3 {
     #[inline(always)]
-    pub fn random(r: Range<f64>) -> IVec3 {
+    pub fn random(r: Range<f64>) -> Vec3 {
         let mut rng = thread_rng();
 
         vec3![rng.gen_range(r.clone())]
     }
 
     #[inline(always)]
-    pub fn random_in_unit_sphere() -> IVec3 {
+    pub fn random_in_unit_sphere() -> Vec3 {
         loop {
-            let v = IVec3::random(-1.0..1.0);
+            let v = Vec3::random(-1.0..1.0);
 
             if v.length() < 1.0 {
                 return v;
@@ -109,7 +109,7 @@ impl IVec3 {
     }
 }
 
-impl Index<usize> for IVec3 {
+impl Index<usize> for Vec3 {
     type Output = f64;
 
     #[inline(always)]
@@ -118,20 +118,22 @@ impl Index<usize> for IVec3 {
     }
 }
 
-impl IndexMut<usize> for IVec3 {
+impl IndexMut<usize> for Vec3 {
     #[inline(always)]
     fn index_mut(&mut self, index: usize) -> &mut Self::Output {
         &mut self.0[index]
     }
 }
 
-impl PartialEq<f64> for IVec3 {
+impl PartialEq<f64> for Vec3 {
+    #[inline(always)]
     fn eq(&self, other: &f64) -> bool {
         self[0] == *other && self[1] == *other && self[2] == *other
     }
 }
 
-impl PartialOrd<f64> for IVec3 {
+impl PartialOrd<f64> for Vec3 {
+    #[inline(always)]
     fn partial_cmp(&self, other: &f64) -> Option<Ordering> {
         let o0 = self[0].partial_cmp(other);
         let o1 = self[1].partial_cmp(other);
@@ -145,9 +147,10 @@ impl PartialOrd<f64> for IVec3 {
     }
 }
 
-impl IVec3 {
+impl Vec3 {
+    #[inline(always)]
     pub fn fmt_color(&self) -> String {
-        let IVec3([r, g, b]) = (256_f64
+        let Vec3([r, g, b]) = (256_f64
             + (self.clone() / SAMPLES_PER_PIXEL as f64)
                 .sqrt()
                 .clamp(0.0, 0.999));

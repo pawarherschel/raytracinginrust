@@ -5,11 +5,8 @@ use indicatif::ParallelProgressIterator;
 use rand::Rng;
 use rayon::prelude::*;
 
-use raytracing::camera::Camera;
 use raytracing::config::*;
-use raytracing::hit::Hittable;
-use raytracing::sphere::Sphere;
-use raytracing::world::World;
+use raytracing::util::*;
 use raytracing::*;
 
 fn main() {
@@ -70,7 +67,7 @@ fn main() {
 
                     let ray = camera.get_ray(u, v);
 
-                    pixel_color += ray_color(&ray, &world, MAX_DEPTH);
+                    pixel_color += ray.color(&world, MAX_DEPTH);
                 }
 
                 sender.send((j * IMAGE_WIDTH + i, pixel_color)).unwrap();
@@ -101,40 +98,4 @@ fn main() {
     fs::write(output_file, output.join("\n")).unwrap();
 
     println!("\x07Done");
-}
-
-pub fn hit_circle(center: &Point3, radius: f64, r: &Ray) -> Option<f64> {
-    let oc = r.get_origin() - center;
-    let r_direction = r.get_direction_denormalized();
-
-    let a = r_direction.length().powi(2);
-    let half_b = oc.dot(&r_direction);
-    let c = oc.length().powi(2) - radius.powi(2);
-
-    let discriminant = half_b.powi(2) - a * c;
-
-    if discriminant < 0.0 {
-        None
-    } else {
-        Some((-half_b - discriminant.sqrt()) / a)
-    }
-}
-
-pub fn ray_color(ray: &Ray, world: &World, depth: u64) -> Color {
-    if depth == 0 {
-        return color![0];
-    }
-    if let Some(record) = world.hit(ray, 0.001, f64::INFINITY) {
-        if let Some((attenuation_color, scattered_ray)) = record.material.scatter(ray, &record) {
-            attenuation_color * ray_color(&scattered_ray, world, depth - 1)
-        } else {
-            color!(0)
-        }
-        // remap!(value: record.normal.unwrap(), from: -1_f64, 1_f64, to: 0_f64, 1_f64)
-    } else {
-        let direction = ray.get_direction();
-        let t = remap!(value: direction.y(), from: -1_f64, 1_f64, to: 0_f64, 1_f64);
-
-        lerp!(white!(), t, color![0.5, 0.7, 1])
-    }
 }

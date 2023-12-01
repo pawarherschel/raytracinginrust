@@ -16,7 +16,10 @@ pub mod vec3;
 pub mod vec3_macros;
 pub mod world;
 
-pub type Vec3 = vec3::IVec3;
-pub type Color = vec3::IVec3;
-pub type Point3 = vec3::IVec3;
-pub type Ray = ray::IRay;
+pub type Vec3 = vec3::Vec3;
+pub type Color = vec3::Vec3;
+pub type Point3 = vec3::Vec3;
+pub type Ray = ray::Ray;
+pub type Camera = camera::Camera;
+pub type World = world::World;
+pub type Sphere = sphere::Sphere;

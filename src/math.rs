@@ -18,6 +18,17 @@ macro_rules! remap {
     }};
 }
 
+// #[inline(always)]
+// pub fn rand21(x: f64, y: f64) -> f64 {
+//     let seed = vec3![12.9898, 78.233, 1243.1254];
+//     let time = SystemTime::now()
+//         .duration_since(SystemTime::UNIX_EPOCH)
+//         .unwrap()
+//         .as_secs_f64();
+//     let cord = vec3![x, y, time];
+//     (cord.dot(&seed).sin() * 43758.5453).fract()
+// }
+
 #[cfg(test)]
 mod map_tests {
     use crate::{color, Color};

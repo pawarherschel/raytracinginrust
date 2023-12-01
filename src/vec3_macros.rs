@@ -6,7 +6,7 @@ macro_rules! pairwise_operation_generic {
 
             #[inline(always)]
             fn $fn_name(self, rhs: $rhs) -> Self::Output {
-                Vec3::new(
+                vec3!(
                     self[0] $op rhs[0],
                     self[1] $op rhs[1],
                     self[2] $op rhs[2],
@@ -34,7 +34,7 @@ macro_rules! operation_generic {
 
             #[inline(always)]
             fn $fn_name(self, rhs: $rhs) -> Self::Output {
-                Vec3::new(
+                vec3!(
                     self[0] $op rhs,
                     self[1] $op rhs,
                     self[2] $op rhs,
@@ -52,7 +52,7 @@ macro_rules! operation_generic_flip {
 
             #[inline(always)]
             fn $fn_name(self, rhs: $rhs) -> Self::Output {
-                Vec3::new(
+                vec3!(
                     self $op rhs[0],
                     self $op rhs[1],
                     self $op rhs[2],
@@ -81,14 +81,14 @@ macro_rules! floating_point_operation {
 macro_rules! fn_on_each {
     ($fn_name:ident $(,)? $($args:ident),*) => {
         #[inline(always)]
-        fn $fn_name(self, $($args:f64),*) -> Vec3 {
-            Vec3::new(self[0].$fn_name($($args),*), self[1].$fn_name($($args),*), self[2].$fn_name($($args),*))
+        fn $fn_name(self, $($args:f64),*) -> Self {
+            Self::new(self[0].$fn_name($($args),*), self[1].$fn_name($($args),*), self[2].$fn_name($($args),*))
         }
     };
     (& $fn_name:ident $(,)? $($args:ident),*) => {
         #[inline(always)]
-        fn $fn_name(&self, $($args:f64),*) -> Vec3 {
-            Vec3::new(self[0].$fn_name($($args),*), self[1].$fn_name($($args),*), self[2].$fn_name($($args),*))
+        fn $fn_name(&self, $($args:f64),*) -> Self {
+            Self::new(self[0].$fn_name($($args),*), self[1].$fn_name($($args),*), self[2].$fn_name($($args),*))
         }
     };
 }
@@ -97,7 +97,7 @@ macro_rules! fn_on_each {
 macro_rules! on_each_operation {
     ($trait:ident, $fn_name:ident) => {
         impl $trait for Vec3 {
-            type Output = Vec3;
+            type Output = Self;
 
             fn_on_each!($fn_name);
         }
@@ -129,10 +129,10 @@ macro_rules! pairwise_mut_operation {
 
 #[macro_export]
 macro_rules! vec3 {
-    ($l: expr) => {{
-        Vec3::new($l as f64, $l as f64, $l as f64)
+    ($l: expr$(,)*) => {{
+        Vec3([$l as f64, $l as f64, $l as f64])
     }};
-    ($l0: expr, $l1: expr, $l2: expr) => {{
-        Vec3::new($l0 as f64, $l1 as f64, $l2 as f64)
+    ($l0: expr, $l1: expr, $l2: expr$(,)*) => {{
+        Vec3([$l0 as f64, $l1 as f64, $l2 as f64])
     }};
 }

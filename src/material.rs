@@ -13,12 +13,14 @@ pub struct Lambertian {
 }
 
 impl Lambertian {
+    #[inline(always)]
     pub fn new(albedo: Color) -> Self {
         Self { albedo }
     }
 }
 
 impl Scatter for Lambertian {
+    #[inline(always)]
     fn scatter(&self, ray_in: &Ray, hit_record: &HitRecord) -> Option<(Color, Ray)> {
         let scatter_direction =
             hit_record.normal.clone().unwrap() + Vec3::random_in_unit_sphere().normalize();
@@ -40,12 +42,14 @@ pub struct Metal {
 }
 
 impl Metal {
+    #[inline(always)]
     pub fn new(albedo: Color, fuzz: f64) -> Self {
         Self { albedo, fuzz }
     }
 }
 
 impl Scatter for Metal {
+    #[inline(always)]
     fn scatter(&self, ray_in: &Ray, hit_record: &HitRecord) -> Option<(Color, Ray)> {
         let reflected = ray_in
             .direction

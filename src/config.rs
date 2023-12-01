@@ -7,7 +7,9 @@ use crate::{color, point3, x, y, z, Color, Point3};
 
 // IMAGE
 pub static ASPECT_RATIO: f64 = 16.0 / 9.0;
+// pub static HI_RES: bool = cfg!(debug_assertions); // for testing with AMD uPerf
 pub static HI_RES: bool = cfg!(not(debug_assertions));
+// normal operation
 pub static IMAGE_WIDTH: u64 = if HI_RES { 1920 } else { 256 };
 pub static IMAGE_HEIGHT: u64 = (IMAGE_WIDTH as f64 / ASPECT_RATIO) as u64;
 pub static SAMPLES_PER_PIXEL: u64 = 2 << 6;
