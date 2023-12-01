@@ -77,7 +77,7 @@ pub fn ray_color(ray: &Ray, world: &World, depth: u64) -> Color {
     if depth == 0 {
         return color![0];
     }
-    if let Some(record) = world.hit(ray, 0.0, f64::INFINITY) {
+    if let Some(record) = world.hit(ray, 0.001, f64::INFINITY) {
         let target =
             record.point.clone() + record.normal.clone().unwrap() + Vec3::random_in_unit_sphere();
         let r = Ray::new(record.point.clone(), target - record.point);
