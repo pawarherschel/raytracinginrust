@@ -3,15 +3,11 @@ use std::io::{stderr, Write};
 use rand::Rng;
 
 use raytracing::camera::Camera;
-use raytracing::config::{IMAGE_HEIGHT, IMAGE_WIDTH, SAMPLES_PER_PIXEL};
+use raytracing::config::{IMAGE_HEIGHT, IMAGE_WIDTH, MAX_DEPTH, SAMPLES_PER_PIXEL};
 use raytracing::hit::Hittable;
 use raytracing::sphere::Sphere;
-use raytracing::white;
 use raytracing::world::World;
-use raytracing::Point3;
-use raytracing::Ray;
-use raytracing::{color, Color};
-use raytracing::{lerp, remap};
+use raytracing::*;
 
 fn main() {
     // World
@@ -19,6 +15,11 @@ fn main() {
         Box::new(Sphere::new(Point3::new(0.0, 0.0, -1.0), 0.5)),
         Box::new(Sphere::new(Point3::new(0.0, -100.5, -1.0), 100.0)),
     ];
+
+    // let world: Vec<Box<dyn Hittable>> = vec![
+    //     Box::new(Cube::new(Point3::new(0.0, 0.0, -10.0), vec3![0.5])),
+    //     // Box::new(Cube::new(Point3::new(0.0, -100.5, -1.0), vec3![100.0])),
+    // ];
 
     // Camera
     let camera = Camera::new();
@@ -45,7 +46,7 @@ fn main() {
 
                 let ray = camera.get_ray(u, v);
 
-                pixel_color += ray_color(&ray, &world);
+                pixel_color += ray_color(&ray, &world, MAX_DEPTH);
             }
 
             println!("{}", pixel_color.fmt_color());
@@ -72,9 +73,17 @@ pub fn hit_circle(center: &Point3, radius: f64, r: &Ray) -> Option<f64> {
     }
 }
 
-pub fn ray_color(ray: &Ray, world: &World) -> Color {
+pub fn ray_color(ray: &Ray, world: &World, depth: u64) -> Color {
+    if depth == 0 {
+        return color![0];
+    }
     if let Some(record) = world.hit(ray, 0.0, f64::INFINITY) {
-        remap!(value: record.normal.unwrap(), from: -1_f64, 1_f64, to: 0_f64, 1_f64)
+        let target =
+            record.point.clone() + record.normal.clone().unwrap() + Vec3::random_in_unit_sphere();
+        let r = Ray::new(record.point.clone(), target - record.point);
+
+        0.5 * ray_color(&r, world, depth - 1)
+        // remap!(value: record.normal.unwrap(), from: -1_f64, 1_f64, to: 0_f64, 1_f64)
     } else {
         let direction = ray.get_direction();
         let t = remap!(value: direction.y(), from: -1_f64, 1_f64, to: 0_f64, 1_f64);

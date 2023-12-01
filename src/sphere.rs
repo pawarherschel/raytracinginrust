@@ -1,5 +1,5 @@
-use crate::{Point3, Ray, value};
 use crate::hit::{HitRecord, Hittable};
+use crate::{value, Point3, Ray};
 
 #[derive(Clone, Debug, Default)]
 pub struct Sphere {
@@ -18,6 +18,10 @@ impl Hittable for Sphere {
         let oc = &ray.origin - &self.center;
         let r_direction = ray.get_direction_denormalized();
 
+        /// float sdSphere( vec3 p, float s )
+        /// {
+        ///     return length(p)-s;
+        /// }
         let a = r_direction.length().powi(2);
         let half_b = oc.dot(&r_direction);
         let c = oc.length().powi(2) - self.radius.powi(2);

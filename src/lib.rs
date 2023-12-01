@@ -1,8 +1,10 @@
 #![allow(unused)]
-
+#![feature(stmt_expr_attributes)]
 pub mod camera;
 pub mod config;
+pub mod cube;
 pub mod hit;
+pub mod macros;
 pub mod math;
 pub mod ray;
 pub mod sphere;

@@ -1,9 +1,13 @@
+use std::cmp::Ordering;
 use std::fmt::{Display, Formatter};
 use std::ops::{
-    Add, AddAssign, Div, DivAssign, Index, IndexMut, Mul, MulAssign, Neg, Sub, SubAssign,
+    Add, AddAssign, Div, DivAssign, Index, IndexMut, Mul, MulAssign, Neg, Range, Sub, SubAssign,
 };
 
+use rand::prelude::*;
+
 use crate::config::SAMPLES_PER_PIXEL;
+use crate::vec3;
 
 #[derive(Clone, Default, Debug, PartialOrd, PartialEq)]
 pub struct Vec3(pub [f64; 3]);
@@ -11,6 +15,68 @@ pub struct Vec3(pub [f64; 3]);
 impl Vec3 {
     pub fn new(a: f64, b: f64, c: f64) -> Self {
         Self([a, b, c])
+    }
+}
+
+impl Vec3 {
+    pub fn x(&self) -> f64 {
+        self[0]
+    }
+    pub fn y(&self) -> f64 {
+        self[1]
+    }
+    pub fn z(&self) -> f64 {
+        self[2]
+    }
+
+    pub fn r(&self) -> f64 {
+        self[0]
+    }
+    pub fn g(&self) -> f64 {
+        self[1]
+    }
+    pub fn b(&self) -> f64 {
+        self[2]
+    }
+}
+
+impl Vec3 {
+    pub fn dot(&self, rhs: &Vec3) -> f64 {
+        self.x() * rhs.x() + self.y() * rhs.y() + self.z() * rhs.z()
+    }
+
+    pub fn cross(&self, rhs: &Vec3) -> Vec3 {
+        Vec3::new(
+            self.y() * rhs.z() - self.z() * rhs.y(),
+            self.z() * rhs.x() - self.x() * rhs.z(),
+            self.x() * rhs.y() - self.y() * rhs.x(),
+        )
+    }
+
+    pub fn length(&self) -> f64 {
+        self.dot(self).sqrt()
+    }
+
+    pub fn normalize(self) -> Vec3 {
+        self.clone() / self.length()
+    }
+}
+
+impl Vec3 {
+    pub fn random(r: Range<f64>) -> Vec3 {
+        let mut rng = thread_rng();
+
+        vec3![rng.gen_range(r.clone())]
+    }
+
+    pub fn random_in_unit_sphere() -> Vec3 {
+        loop {
+            let v = Vec3::random(-1.0..1.0);
+
+            if v.length() < 1.0 {
+                return v;
+            }
+        }
     }
 }
 
@@ -300,47 +366,23 @@ impl DivAssign<f64> for &mut Vec3 {
     }
 }
 
-impl Vec3 {
-    pub fn x(&self) -> f64 {
-        self[0]
-    }
-    pub fn y(&self) -> f64 {
-        self[1]
-    }
-    pub fn z(&self) -> f64 {
-        self[2]
-    }
-
-    pub fn r(&self) -> f64 {
-        self[0]
-    }
-    pub fn g(&self) -> f64 {
-        self[1]
-    }
-    pub fn b(&self) -> f64 {
-        self[2]
+impl PartialEq<f64> for Vec3 {
+    fn eq(&self, other: &f64) -> bool {
+        self[0] == *other && self[1] == *other && self[2] == *other
     }
 }
 
-impl Vec3 {
-    pub fn dot(&self, rhs: &Vec3) -> f64 {
-        self.x() * rhs.x() + self.y() * rhs.y() + self.z() * rhs.z()
-    }
+impl PartialOrd<f64> for Vec3 {
+    fn partial_cmp(&self, other: &f64) -> Option<Ordering> {
+        let o0 = self[0].partial_cmp(other);
+        let o1 = self[1].partial_cmp(other);
+        let o2 = self[2].partial_cmp(other);
 
-    pub fn cross(&self, rhs: &Vec3) -> Vec3 {
-        Vec3::new(
-            self.y() * rhs.z() - self.z() * rhs.y(),
-            self.z() * rhs.x() - self.x() * rhs.z(),
-            self.x() * rhs.y() - self.y() * rhs.x(),
-        )
-    }
-
-    pub fn length(&self) -> f64 {
-        self.dot(self).sqrt()
-    }
-
-    pub fn normalize(self) -> Vec3 {
-        self.clone() / self.length()
+        if o0 == o1 && o1 == o2 {
+            o0
+        } else {
+            None
+        }
     }
 }
 
