@@ -104,7 +104,7 @@ fn main() {
 }
 
 pub fn hit_circle(center: &Point3, radius: f64, r: &Ray) -> Option<f64> {
-    let oc = r.get_origin() - center.clone();
+    let oc = r.get_origin() - center;
     let r_direction = r.get_direction_denormalized();
 
     let a = r_direction.length().powi(2);

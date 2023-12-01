@@ -1,8 +1,6 @@
 use std::cmp::Ordering;
 use std::fmt::{Display, Formatter};
-use std::ops::{
-    Add, AddAssign, Div, DivAssign, Index, IndexMut, Mul, MulAssign, Neg, Range, Sub, SubAssign,
-};
+use std::ops::{Add, Div, Index, IndexMut, Mul, Neg, Range, Sub};
 
 use rand::prelude::*;
 
@@ -13,38 +11,47 @@ use crate::vec3;
 pub struct Vec3(pub [f64; 3]);
 
 impl Vec3 {
+    #[inline(always)]
     pub fn new(a: f64, b: f64, c: f64) -> Self {
         Self([a, b, c])
     }
 }
 
 impl Vec3 {
+    #[inline(always)]
     pub fn x(&self) -> f64 {
         self[0]
     }
+    #[inline(always)]
     pub fn y(&self) -> f64 {
         self[1]
     }
+    #[inline(always)]
     pub fn z(&self) -> f64 {
         self[2]
     }
 
+    #[inline(always)]
     pub fn r(&self) -> f64 {
         self[0]
     }
+    #[inline(always)]
     pub fn g(&self) -> f64 {
         self[1]
     }
+    #[inline(always)]
     pub fn b(&self) -> f64 {
         self[2]
     }
 }
 
 impl Vec3 {
+    #[inline(always)]
     pub fn dot(&self, rhs: &Vec3) -> f64 {
         self.x() * rhs.x() + self.y() * rhs.y() + self.z() * rhs.z()
     }
 
+    #[inline(always)]
     pub fn cross(&self, rhs: &Vec3) -> Vec3 {
         Vec3::new(
             self.y() * rhs.z() - self.z() * rhs.y(),
@@ -53,34 +60,41 @@ impl Vec3 {
         )
     }
 
+    #[inline(always)]
     pub fn length(&self) -> f64 {
         self.dot(self).sqrt()
     }
 
+    #[inline(always)]
     pub fn normalize(&self) -> Vec3 {
         self.clone() / self.length()
     }
 
+    #[inline(always)]
     pub fn abs(&self) -> Self {
         vec3![self[0].abs(), self[1].abs(), self[2].abs()]
     }
 
+    #[inline(always)]
     pub fn is_near_zero(&self) -> bool {
         self.abs() < NEAR_ZERO_EPSILON.abs()
     }
 
+    #[inline(always)]
     pub fn reflect(&self, normal: &Self) -> Self {
         self - 2.0 * self.dot(normal) * normal
     }
 }
 
 impl Vec3 {
+    #[inline(always)]
     pub fn random(r: Range<f64>) -> Vec3 {
         let mut rng = thread_rng();
 
         vec3![rng.gen_range(r.clone())]
     }
 
+    #[inline(always)]
     pub fn random_in_unit_sphere() -> Vec3 {
         loop {
             let v = Vec3::random(-1.0..1.0);
@@ -95,286 +109,16 @@ impl Vec3 {
 impl Index<usize> for Vec3 {
     type Output = f64;
 
+    #[inline(always)]
     fn index(&self, index: usize) -> &Self::Output {
         &self.0[index]
     }
 }
 
 impl IndexMut<usize> for Vec3 {
+    #[inline(always)]
     fn index_mut(&mut self, index: usize) -> &mut Self::Output {
         &mut self.0[index]
-    }
-}
-
-impl Add<Vec3> for Vec3 {
-    type Output = Vec3;
-
-    fn add(self, rhs: Vec3) -> Self::Output {
-        Vec3::new(self[0] + rhs[0], self[1] + rhs[1], self[2] + rhs[2])
-    }
-}
-
-impl AddAssign<Vec3> for Vec3 {
-    fn add_assign(&mut self, rhs: Vec3) {
-        self[0] += rhs[0];
-        self[1] += rhs[1];
-        self[2] += rhs[2];
-    }
-}
-
-impl Add<Vec3> for &Vec3 {
-    type Output = Vec3;
-
-    fn add(self, rhs: Vec3) -> Self::Output {
-        Vec3::new(self[0] + rhs[0], self[1] + rhs[1], self[2] + rhs[2])
-    }
-}
-
-impl AddAssign<Vec3> for &mut Vec3 {
-    fn add_assign(&mut self, rhs: Vec3) {
-        self[0] += rhs[0];
-        self[1] += rhs[1];
-        self[2] += rhs[2];
-    }
-}
-
-impl Add<f64> for Vec3 {
-    type Output = Vec3;
-
-    fn add(self, rhs: f64) -> Self::Output {
-        Vec3::new(self[0] + rhs, self[1] + rhs, self[2] + rhs)
-    }
-}
-
-impl Add<f64> for &Vec3 {
-    type Output = Vec3;
-
-    fn add(self, rhs: f64) -> Self::Output {
-        Vec3::new(self[0] + rhs, self[1] + rhs, self[2] + rhs)
-    }
-}
-
-impl Add<Vec3> for f64 {
-    type Output = Vec3;
-
-    fn add(self, rhs: Vec3) -> Self::Output {
-        Vec3::new(rhs[0] + self, rhs[1] + self, rhs[2] + self)
-    }
-}
-
-impl Add<&Vec3> for f64 {
-    type Output = Vec3;
-
-    fn add(self, rhs: &Vec3) -> Self::Output {
-        Vec3::new(rhs[0] + self, rhs[1] + self, rhs[2] + self)
-    }
-}
-
-impl Neg for Vec3 {
-    type Output = Vec3;
-
-    fn neg(self) -> Self::Output {
-        -1.0 * self
-    }
-}
-
-impl Neg for &Vec3 {
-    type Output = Vec3;
-
-    fn neg(self) -> Self::Output {
-        -1.0 * self
-    }
-}
-
-impl Sub<Vec3> for Vec3 {
-    type Output = Vec3;
-
-    fn sub(self, rhs: Vec3) -> Self::Output {
-        Vec3::new(self[0] - rhs[0], self[1] - rhs[1], self[2] - rhs[2])
-    }
-}
-
-impl SubAssign<Vec3> for Vec3 {
-    fn sub_assign(&mut self, rhs: Vec3) {
-        self[0] -= rhs[0];
-        self[1] -= rhs[1];
-        self[2] -= rhs[2];
-    }
-}
-
-impl Sub<Vec3> for &Vec3 {
-    type Output = Vec3;
-
-    fn sub(self, rhs: Vec3) -> Self::Output {
-        Vec3::new(self[0] - rhs[0], self[1] - rhs[1], self[2] - rhs[2])
-    }
-}
-
-impl SubAssign<Vec3> for &mut Vec3 {
-    fn sub_assign(&mut self, rhs: Vec3) {
-        self[0] -= rhs[0];
-        self[1] -= rhs[1];
-        self[2] -= rhs[2];
-    }
-}
-
-impl Sub<f64> for Vec3 {
-    type Output = Vec3;
-
-    fn sub(self, rhs: f64) -> Self::Output {
-        Vec3::new(self[0] - rhs, self[1] - rhs, self[2] - rhs)
-    }
-}
-
-impl Sub<f64> for &Vec3 {
-    type Output = Vec3;
-
-    fn sub(self, rhs: f64) -> Self::Output {
-        Vec3::new(self[0] - rhs, self[1] - rhs, self[2] - rhs)
-    }
-}
-
-impl Sub<Vec3> for f64 {
-    type Output = Vec3;
-
-    fn sub(self, rhs: Vec3) -> Self::Output {
-        Vec3::new(rhs[0] - self, rhs[1] - self, rhs[2] - self)
-    }
-}
-
-impl Sub<&Vec3> for f64 {
-    type Output = Vec3;
-
-    fn sub(self, rhs: &Vec3) -> Self::Output {
-        Vec3::new(rhs[0] - self, rhs[1] - self, rhs[2] - self)
-    }
-}
-
-impl Sub<&Vec3> for Vec3 {
-    type Output = Vec3;
-
-    fn sub(self, rhs: &Vec3) -> Self::Output {
-        Vec3::new(self[0] - rhs[0], self[1] - rhs[1], self[2] - rhs[2])
-    }
-}
-
-impl Sub<&Vec3> for &Vec3 {
-    type Output = Vec3;
-
-    fn sub(self, rhs: &Vec3) -> Self::Output {
-        Vec3::new(self[0] - rhs[0], self[1] - rhs[1], self[2] - rhs[2])
-    }
-}
-
-impl Mul<Vec3> for Vec3 {
-    type Output = Vec3;
-
-    fn mul(self, rhs: Vec3) -> Self::Output {
-        Vec3::new(self[0] * rhs[0], self[1] * rhs[1], self[2] * rhs[2])
-    }
-}
-
-impl MulAssign<Vec3> for Vec3 {
-    fn mul_assign(&mut self, rhs: Vec3) {
-        self[0] *= rhs[0];
-        self[1] *= rhs[1];
-        self[2] *= rhs[2];
-    }
-}
-
-impl Mul<f64> for Vec3 {
-    type Output = Vec3;
-
-    fn mul(self, rhs: f64) -> Self::Output {
-        Vec3::new(self[0] * rhs, self[1] * rhs, self[2] * rhs)
-    }
-}
-
-impl MulAssign<f64> for Vec3 {
-    fn mul_assign(&mut self, rhs: f64) {
-        self[0] *= rhs;
-        self[1] *= rhs;
-        self[2] *= rhs;
-    }
-}
-
-impl Mul<f64> for &Vec3 {
-    type Output = Vec3;
-
-    fn mul(self, rhs: f64) -> Self::Output {
-        Vec3::new(self[0] * rhs, self[1] * rhs, self[2] * rhs)
-    }
-}
-
-impl MulAssign<f64> for &mut Vec3 {
-    fn mul_assign(&mut self, rhs: f64) {
-        self[0] *= rhs;
-        self[1] *= rhs;
-        self[2] *= rhs;
-    }
-}
-
-impl Mul<Vec3> for f64 {
-    type Output = Vec3;
-
-    fn mul(self, rhs: Vec3) -> Self::Output {
-        rhs * self
-    }
-}
-
-impl Mul<&Vec3> for f64 {
-    type Output = Vec3;
-
-    fn mul(self, rhs: &Vec3) -> Self::Output {
-        rhs * self
-    }
-}
-
-impl Div<Vec3> for Vec3 {
-    type Output = Vec3;
-
-    fn div(self, rhs: Vec3) -> Self::Output {
-        Vec3::new(self[0] / rhs[0], self[1] / rhs[1], self[2] / rhs[2])
-    }
-}
-
-impl DivAssign<Vec3> for Vec3 {
-    fn div_assign(&mut self, rhs: Vec3) {
-        self[0] /= rhs[0];
-        self[1] /= rhs[1];
-        self[2] /= rhs[2];
-    }
-}
-
-impl Div<f64> for Vec3 {
-    type Output = Vec3;
-
-    fn div(self, rhs: f64) -> Self::Output {
-        Vec3::new(self[0] / rhs, self[1] / rhs, self[2] / rhs)
-    }
-}
-
-impl DivAssign<f64> for Vec3 {
-    fn div_assign(&mut self, rhs: f64) {
-        self[0] /= rhs;
-        self[1] /= rhs;
-        self[2] /= rhs;
-    }
-}
-
-impl Div<f64> for &Vec3 {
-    type Output = Vec3;
-
-    fn div(self, rhs: f64) -> Self::Output {
-        Vec3::new(self[0] / rhs, self[1] / rhs, self[2] / rhs)
-    }
-}
-
-impl DivAssign<f64> for &mut Vec3 {
-    fn div_assign(&mut self, rhs: f64) {
-        self[0] /= rhs;
-        self[1] /= rhs;
-        self[2] /= rhs;
     }
 }
 
@@ -421,3 +165,173 @@ impl Vec3 {
         format!("{} {} {}", r, g, b)
     }
 }
+
+macro_rules! pairwise_operation_generic {
+    ($lhs:ty, $rhs:ty, $output_type: ident, $trait:ident, $fn_name:ident, $op:tt) => {
+        impl $trait<$rhs> for $lhs {
+            type Output = $output_type;
+
+            fn $fn_name(self, rhs: $rhs) -> Self::Output {
+                Vec3::new(
+                    self[0] $op rhs[0],
+                    self[1] $op rhs[1],
+                    self[2] $op rhs[2],
+                )
+            }
+        }
+    };
+}
+
+macro_rules! pairwise_operation {
+    ($trait:ident, $fn_name:ident, $op:tt) => {
+        pairwise_operation_generic!(Vec3, Vec3, Vec3, $trait, $fn_name, $op);
+        pairwise_operation_generic!(Vec3, &Vec3, Vec3, $trait, $fn_name, $op);
+        pairwise_operation_generic!(&Vec3, Vec3, Vec3, $trait, $fn_name, $op);
+        pairwise_operation_generic!(&Vec3, &Vec3, Vec3, $trait, $fn_name, $op);
+    };
+}
+
+macro_rules! operation_generic {
+    ($lhs:ty, $rhs:ty, $output_type: ident, $trait:ident, $fn_name:ident, $op:tt) => {
+        impl $trait<$rhs> for $lhs {
+            type Output = $output_type;
+
+            fn $fn_name(self, rhs: $rhs) -> Self::Output {
+                Vec3::new(
+                    self[0] $op rhs,
+                    self[1] $op rhs,
+                    self[2] $op rhs,
+                )
+            }
+        }
+    };
+    ($lhs:ty, &$rhs:ty, $output_type: ident, $trait:ident, $fn_name:ident, $op:tt) => {
+        impl $trait<&$rhs> for $lhs {
+            type Output = $output_type;
+
+            fn $fn_name(self, rhs: &$rhs) -> Self::Output {
+                Vec3::new(
+                    self[0] $op rhs,
+                    self[1] $op rhs,
+                    self[2] $op rhs,
+                )
+            }
+        }
+    };
+    (&$lhs:ty, $rhs:ty, $output_type: ident, $trait:ident, $fn_name:ident, $op:tt) => {
+        impl $trait<$rhs> for &$lhs {
+            type Output = $output_type;
+
+            fn $fn_name(self, rhs: $rhs) -> Self::Output {
+                Vec3::new(
+                    self[0] $op rhs,
+                    self[1] $op rhs,
+                    self[2] $op rhs,
+                )
+            }
+        }
+    };
+    (&$lhs:ty, &$rhs:ty, $output_type: ident, $trait:ident, $fn_name:ident, $op:tt) => {
+        impl $trait<&$rhs> for &$lhs {
+            type Output = $output_type;
+
+            fn $fn_name(self, rhs: &$rhs) -> Self::Output {
+                Vec3::new(
+                    self[0] $op rhs,
+                    self[1] $op rhs,
+                    self[2] $op rhs,
+                )
+            }
+        }
+    };
+}
+macro_rules! operation_generic_flip {
+    ($lhs:ty, $rhs:ty, $output_type: ident, $trait:ident, $fn_name:ident, $op:tt) => {
+        impl $trait<$rhs> for $lhs {
+            type Output = $output_type;
+
+            fn $fn_name(self, rhs: $rhs) -> Self::Output {
+                Vec3::new(
+                    self $op rhs[0],
+                    self $op rhs[1],
+                    self $op rhs[2],
+                )
+            }
+        }
+    };
+    ($lhs:ty, &$rhs:ty, $output_type: ident, $trait:ident, $fn_name:ident, $op:tt) => {
+        impl $trait<&$rhs> for $lhs {
+            type Output = $output_type;
+
+            fn $fn_name(self, rhs: &$rhs) -> Self::Output {
+                Vec3::new(
+                    self $op rhs[0],
+                    self $op rhs[1],
+                    self $op rhs[2],
+                )
+            }
+        }
+    };
+    (&$lhs:ty, $rhs:ty, $output_type: ident, $trait:ident, $fn_name:ident, $op:tt) => {
+        impl $trait<$rhs> for &$lhs {
+            type Output = $output_type;
+
+            fn $fn_name(self, rhs: $rhs) -> Self::Output {
+                Vec3::new(
+                    self $op rhs[0],
+                    self $op rhs[1],
+                    self $op rhs[2],
+                )
+            }
+        }
+    };
+    (&$lhs:ty, &$rhs:ty, $output_type: ident, $trait:ident, $fn_name:ident, $op:tt) => {
+        impl $trait<&$rhs> for &$lhs {
+            type Output = $output_type;
+
+            fn $fn_name(self, rhs: &$rhs) -> Self::Output {
+                Vec3::new(
+                    self $op rhs[0],
+                    self $op rhs[1],
+                    self $op rhs[2],
+                )
+            }
+        }
+    };
+}
+
+macro_rules! floating_point_operation {
+    ($trait:ident, $fn_name:ident, $op:tt) => {
+        operation_generic!(Vec3, f64, Vec3, $trait, $fn_name, $op);
+        operation_generic!(Vec3, &f64, Vec3, $trait, $fn_name, $op);
+        operation_generic!(&Vec3, f64, Vec3, $trait, $fn_name, $op);
+        operation_generic!(&Vec3, &f64, Vec3, $trait, $fn_name, $op);
+
+        operation_generic_flip!(f64, Vec3, Vec3, $trait, $fn_name, $op);
+        operation_generic_flip!(f64, &Vec3, Vec3, $trait, $fn_name, $op);
+        operation_generic_flip!(&f64, Vec3, Vec3, $trait, $fn_name, $op);
+        operation_generic_flip!(&f64, &Vec3, Vec3, $trait, $fn_name, $op);
+    };
+}
+
+macro_rules! on_each_operation {
+    ($trait:ident, $fn_name:ident) => {
+        impl $trait for Vec3 {
+            type Output = Vec3;
+
+            fn $fn_name(self) -> Self::Output {
+                Vec3::new(self[0].$fn_name(), self[1].$fn_name(), self[2].$fn_name())
+            }
+        }
+    };
+}
+
+pairwise_operation!(Add, add, +);
+pairwise_operation!(Sub, sub, -);
+
+floating_point_operation!(Add, add, +);
+floating_point_operation!(Sub, sub, -);
+floating_point_operation!(Mul, mul, *);
+floating_point_operation!(Div, div, /);
+
+on_each_operation!(Neg, neg);
