@@ -11,6 +11,10 @@ pub struct Sphere {
     material: Arc<dyn Scatter>,
 }
 
+unsafe impl Send for Sphere {}
+
+unsafe impl Sync for Sphere {}
+
 impl Sphere {
     pub fn new(center: Point3, radius: f64, material: Arc<dyn Scatter>) -> Self {
         Sphere {

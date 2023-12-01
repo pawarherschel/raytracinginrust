@@ -1,80 +1,106 @@
-use std::io::{stderr, Write};
+use std::fs;
+use std::sync::{mpsc, Arc, RwLock};
 
+use indicatif::ParallelProgressIterator;
 use rand::Rng;
+use rayon::prelude::*;
 
 use raytracing::camera::Camera;
-use raytracing::config::{
-    CENTER_SPHERE_MATERIAL, GROUND_MATERIAL, IMAGE_HEIGHT, IMAGE_WIDTH, LEFT_SPHERE_MATERIAL,
-    MAX_DEPTH, RIGHT_SPHERE_MATERIAL, SAMPLES_PER_PIXEL,
-};
+use raytracing::config::*;
 use raytracing::hit::Hittable;
 use raytracing::sphere::Sphere;
 use raytracing::world::World;
 use raytracing::*;
 
 fn main() {
+    dbg!(HI_RES);
+
     // World
-    let world: Vec<Box<dyn Hittable>> = vec![
-        Box::new(Sphere::new(
+    let world: World = Arc::new(vec![
+        Arc::new(RwLock::new(Sphere::new(
             point3!(0.0, 0.0, -1.0),
             0.5,
             CENTER_SPHERE_MATERIAL.clone(),
-        )),
-        Box::new(Sphere::new(
+        ))),
+        Arc::new(RwLock::new(Sphere::new(
             point3!(0.0, -100.5, -1.0),
             100.0,
             GROUND_MATERIAL.clone(),
-        )),
-        Box::new(Sphere::new(
+        ))),
+        Arc::new(RwLock::new(Sphere::new(
             point3!(-1, 0, -1),
             0.5,
             LEFT_SPHERE_MATERIAL.clone(),
-        )),
-        Box::new(Sphere::new(
+        ))),
+        Arc::new(RwLock::new(Sphere::new(
             point3!(1, 0, -1),
             0.5,
             RIGHT_SPHERE_MATERIAL.clone(),
-        )),
-    ];
-
-    // let world: Vec<Box<dyn Hittable>> = vec![
-    //     Box::new(Cube::new(Point3::new(0.0, 0.0, -10.0), vec3![0.5])),
-    //     // Box::new(Cube::new(Point3::new(0.0, -100.5, -1.0), vec3![100.0])),
-    // ];
+        ))),
+    ]);
 
     // Camera
     let camera = Camera::new();
 
-    // RNG
-    let mut rng = rand::thread_rng();
+    let mut output = vec![
+        "P3".to_string(),
+        format!("{} {}", IMAGE_WIDTH, IMAGE_HEIGHT),
+        "255".to_string(),
+    ];
 
-    println!("P3");
-    println!("{} {}", IMAGE_WIDTH, IMAGE_HEIGHT);
-    println!("255");
+    let scanlines = (0..IMAGE_HEIGHT).rev().collect::<Vec<_>>();
+    let scanlines_len = scanlines.len() as u64;
 
-    for j in (0..IMAGE_HEIGHT).rev() {
-        eprintln!("Scanlines remaining: {}", j);
-        stderr().flush().unwrap();
+    let (sender, receiver) = mpsc::channel();
 
-        for i in 0..IMAGE_WIDTH {
-            let mut pixel_color = color![0];
-            for _ in 0..SAMPLES_PER_PIXEL {
-                let random_u: f64 = rng.gen();
-                let random_v: f64 = rng.gen();
+    time_it!(at once | "rendering" => scanlines
+        .into_par_iter()
+        .progress_with(get_pb(scanlines_len, "rendering"))
+        .for_each(|j| {
+            (0..IMAGE_WIDTH).into_par_iter().for_each(|i| {
+                let mut rng = rand::thread_rng();
 
-                let u = ((i as f64) + random_u) / ((IMAGE_WIDTH - 1) as f64);
-                let v = ((j as f64) + random_v) / ((IMAGE_HEIGHT - 1) as f64);
+                let mut pixel_color = color!(0);
+                for _ in 0..SAMPLES_PER_PIXEL {
+                    let random_u: f64 = rng.gen();
+                    let random_v: f64 = rng.gen();
 
-                let ray = camera.get_ray(u, v);
+                    let u = ((i as f64) + random_u) / ((IMAGE_WIDTH - 1) as f64);
+                    let v = ((j as f64) + random_v) / ((IMAGE_HEIGHT - 1) as f64);
 
-                pixel_color += ray_color(&ray, &world, MAX_DEPTH);
-            }
+                    let ray = camera.get_ray(u, v);
 
-            println!("{}", pixel_color.fmt_color());
-        }
+                    pixel_color += ray_color(&ray, &world, MAX_DEPTH);
+                }
+
+                sender.send((j * IMAGE_WIDTH + i, pixel_color)).unwrap();
+            })
+        })
+    );
+
+    let mut pixels = Vec::with_capacity((IMAGE_WIDTH * IMAGE_HEIGHT) as usize);
+
+    time_it!(at once | "receiving pixels from various threads" => for _ in 0..IMAGE_WIDTH * IMAGE_HEIGHT {
+        pixels.push(receiver.recv().unwrap());
+    });
+
+    time_it!("sorting pixels" => pixels.par_sort_by(|(idx1, _), (idx2, _)| idx2.cmp(idx1)));
+
+    for (_, pixel) in pixels {
+        output.push(pixel.fmt_color().to_string());
     }
 
-    eprintln!("\x07Done");
+    let output_file = if HI_RES { "hi_res.ppm" } else { "img.ppm" };
+
+    println!("output: {}", output_file);
+
+    if fs::metadata(output_file).is_ok() {
+        fs::remove_file(output_file).unwrap();
+    }
+
+    fs::write(output_file, output.join("\n")).unwrap();
+
+    println!("\x07Done");
 }
 
 pub fn hit_circle(center: &Point3, radius: f64, r: &Ray) -> Option<f64> {
