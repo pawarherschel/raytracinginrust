@@ -394,9 +394,18 @@ impl Display for Vec3 {
 
 impl Vec3 {
     pub fn fmt_color(&self) -> String {
-        let r = (256_f64 * (self.r() / SAMPLES_PER_PIXEL as f64).clamp(0.0, 0.999)) as u64;
-        let g = (256_f64 * (self.g() / SAMPLES_PER_PIXEL as f64).clamp(0.0, 0.999)) as u64;
-        let b = (256_f64 * (self.b() / SAMPLES_PER_PIXEL as f64).clamp(0.0, 0.999)) as u64;
+        let r = (256_f64
+            * (self.r() / SAMPLES_PER_PIXEL as f64)
+                .sqrt()
+                .clamp(0.0, 0.999)) as u64;
+        let g = (256_f64
+            * (self.g() / SAMPLES_PER_PIXEL as f64)
+                .sqrt()
+                .clamp(0.0, 0.999)) as u64;
+        let b = (256_f64
+            * (self.b() / SAMPLES_PER_PIXEL as f64)
+                .sqrt()
+                .clamp(0.0, 0.999)) as u64;
         format!("{} {} {}", r, g, b)
     }
 }
