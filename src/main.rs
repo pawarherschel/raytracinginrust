@@ -1,5 +1,5 @@
 use std::fs;
-use std::sync::{mpsc, Arc, RwLock};
+use std::sync::{mpsc, Arc};
 
 use indicatif::ParallelProgressIterator;
 use rand::Rng;
@@ -14,26 +14,26 @@ fn main() {
 
     // World
     let world: World = Arc::new(vec![
-        Arc::new(RwLock::new(Sphere::new(
+        Arc::new(Sphere::new(
             point3!(0.0, 0.0, -1.0),
             0.5,
             CENTER_SPHERE_MATERIAL.clone(),
-        ))),
-        Arc::new(RwLock::new(Sphere::new(
+        )),
+        Arc::new(Sphere::new(
             point3!(0.0, -100.5, -1.0),
             100.0,
             GROUND_MATERIAL.clone(),
-        ))),
-        Arc::new(RwLock::new(Sphere::new(
+        )),
+        Arc::new(Sphere::new(
             point3!(-1, 0, -1),
             0.5,
             LEFT_SPHERE_MATERIAL.clone(),
-        ))),
-        Arc::new(RwLock::new(Sphere::new(
+        )),
+        Arc::new(Sphere::new(
             point3!(1, 0, -1),
             0.5,
             RIGHT_SPHERE_MATERIAL.clone(),
-        ))),
+        )),
     ]);
 
     // Camera
@@ -87,15 +87,22 @@ fn main() {
         output.push(pixel.fmt_color().to_string());
     }
 
-    let output_file = if HI_RES { "hi_res.ppm" } else { "img.ppm" };
+    // let output = time_it!("pushing pixels to output" => {
+    //         let pixels = pixels
+    //             .into_par_iter()
+    //             .map(|(_, it)| it.fmt_color().to_string());
+    //         pre.into_par_iter().chain(pixels).collect::<Vec<String>>()
+    //     });
 
-    println!("output: {}", output_file);
+    println!("output: {}", OUTPUT_FILE);
 
-    if fs::metadata(output_file).is_ok() {
-        fs::remove_file(output_file).unwrap();
-    }
+    time_it!("writing to file" => {
+        if fs::metadata(OUTPUT_FILE).is_ok() {
+            fs::remove_file(OUTPUT_FILE).unwrap();
+        }
 
-    fs::write(output_file, output.join("\n")).unwrap();
+        fs::write(OUTPUT_FILE, output.join("\n")).unwrap();
+    });
 
     println!("\x07Done");
 }
