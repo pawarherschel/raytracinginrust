@@ -1,23 +1,27 @@
 use std::cmp::Ordering;
-use std::fmt::{Display, Formatter};
-use std::ops::{Add, Div, Index, IndexMut, Mul, Neg, Range, Sub};
+use std::fmt::Display;
+use std::ops::{Add, AddAssign, Div, Index, IndexMut, Mul, MulAssign, Neg, Range, Sub, SubAssign};
 
 use rand::prelude::*;
 
 use crate::config::{NEAR_ZERO_EPSILON, SAMPLES_PER_PIXEL};
-use crate::vec3;
+use crate::{
+    floating_point_operation, fn_on_each, on_each_operation, operation_generic,
+    operation_generic_flip, pairwise_mut_operation, pairwise_mut_operation_generic,
+    pairwise_operation, pairwise_operation_generic, vec3,
+};
 
 #[derive(Clone, Default, Debug, PartialOrd, PartialEq)]
-pub struct Vec3(pub [f64; 3]);
+pub struct IVec3(pub [f64; 3]);
 
-impl Vec3 {
+impl IVec3 {
     #[inline(always)]
     pub fn new(a: f64, b: f64, c: f64) -> Self {
         Self([a, b, c])
     }
 }
 
-impl Vec3 {
+impl IVec3 {
     #[inline(always)]
     pub fn x(&self) -> f64 {
         self[0]
@@ -45,15 +49,15 @@ impl Vec3 {
     }
 }
 
-impl Vec3 {
+impl IVec3 {
     #[inline(always)]
-    pub fn dot(&self, rhs: &Vec3) -> f64 {
+    pub fn dot(&self, rhs: &IVec3) -> f64 {
         self.x() * rhs.x() + self.y() * rhs.y() + self.z() * rhs.z()
     }
 
     #[inline(always)]
-    pub fn cross(&self, rhs: &Vec3) -> Vec3 {
-        Vec3::new(
+    pub fn cross(&self, rhs: &IVec3) -> IVec3 {
+        IVec3::new(
             self.y() * rhs.z() - self.z() * rhs.y(),
             self.z() * rhs.x() - self.x() * rhs.z(),
             self.x() * rhs.y() - self.y() * rhs.x(),
@@ -66,14 +70,13 @@ impl Vec3 {
     }
 
     #[inline(always)]
-    pub fn normalize(&self) -> Vec3 {
+    pub fn normalize(&self) -> IVec3 {
         self.clone() / self.length()
     }
 
-    #[inline(always)]
-    pub fn abs(&self) -> Self {
-        vec3![self[0].abs(), self[1].abs(), self[2].abs()]
-    }
+    fn_on_each!(&abs);
+    fn_on_each!(&sqrt);
+    fn_on_each!(&clamp, min, max);
 
     #[inline(always)]
     pub fn is_near_zero(&self) -> bool {
@@ -86,18 +89,18 @@ impl Vec3 {
     }
 }
 
-impl Vec3 {
+impl IVec3 {
     #[inline(always)]
-    pub fn random(r: Range<f64>) -> Vec3 {
+    pub fn random(r: Range<f64>) -> IVec3 {
         let mut rng = thread_rng();
 
         vec3![rng.gen_range(r.clone())]
     }
 
     #[inline(always)]
-    pub fn random_in_unit_sphere() -> Vec3 {
+    pub fn random_in_unit_sphere() -> IVec3 {
         loop {
-            let v = Vec3::random(-1.0..1.0);
+            let v = IVec3::random(-1.0..1.0);
 
             if v.length() < 1.0 {
                 return v;
@@ -106,7 +109,7 @@ impl Vec3 {
     }
 }
 
-impl Index<usize> for Vec3 {
+impl Index<usize> for IVec3 {
     type Output = f64;
 
     #[inline(always)]
@@ -115,20 +118,20 @@ impl Index<usize> for Vec3 {
     }
 }
 
-impl IndexMut<usize> for Vec3 {
+impl IndexMut<usize> for IVec3 {
     #[inline(always)]
     fn index_mut(&mut self, index: usize) -> &mut Self::Output {
         &mut self.0[index]
     }
 }
 
-impl PartialEq<f64> for Vec3 {
+impl PartialEq<f64> for IVec3 {
     fn eq(&self, other: &f64) -> bool {
         self[0] == *other && self[1] == *other && self[2] == *other
     }
 }
 
-impl PartialOrd<f64> for Vec3 {
+impl PartialOrd<f64> for IVec3 {
     fn partial_cmp(&self, other: &f64) -> Option<Ordering> {
         let o0 = self[0].partial_cmp(other);
         let o1 = self[1].partial_cmp(other);
@@ -142,192 +145,23 @@ impl PartialOrd<f64> for Vec3 {
     }
 }
 
-impl Display for Vec3 {
-    fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
-        write!(f, "{} {} {}", self[0], self[1], self[2])
-    }
-}
-
-impl Vec3 {
+impl IVec3 {
     pub fn fmt_color(&self) -> String {
-        let r = (256_f64
-            * (self.r() / SAMPLES_PER_PIXEL as f64)
+        let IVec3([r, g, b]) = (256_f64
+            + (self.clone() / SAMPLES_PER_PIXEL as f64)
                 .sqrt()
-                .clamp(0.0, 0.999)) as u64;
-        let g = (256_f64
-            * (self.g() / SAMPLES_PER_PIXEL as f64)
-                .sqrt()
-                .clamp(0.0, 0.999)) as u64;
-        let b = (256_f64
-            * (self.b() / SAMPLES_PER_PIXEL as f64)
-                .sqrt()
-                .clamp(0.0, 0.999)) as u64;
+                .clamp(0.0, 0.999));
+        let (r, g, b) = (r as u64, g as u64, b as u64);
         format!("{} {} {}", r, g, b)
     }
 }
 
-macro_rules! pairwise_operation_generic {
-    ($lhs:ty, $rhs:ty, $output_type: ident, $trait:ident, $fn_name:ident, $op:tt) => {
-        impl $trait<$rhs> for $lhs {
-            type Output = $output_type;
-
-            fn $fn_name(self, rhs: $rhs) -> Self::Output {
-                Vec3::new(
-                    self[0] $op rhs[0],
-                    self[1] $op rhs[1],
-                    self[2] $op rhs[2],
-                )
-            }
-        }
-    };
-}
-
-macro_rules! pairwise_operation {
-    ($trait:ident, $fn_name:ident, $op:tt) => {
-        pairwise_operation_generic!(Vec3, Vec3, Vec3, $trait, $fn_name, $op);
-        pairwise_operation_generic!(Vec3, &Vec3, Vec3, $trait, $fn_name, $op);
-        pairwise_operation_generic!(&Vec3, Vec3, Vec3, $trait, $fn_name, $op);
-        pairwise_operation_generic!(&Vec3, &Vec3, Vec3, $trait, $fn_name, $op);
-    };
-}
-
-macro_rules! operation_generic {
-    ($lhs:ty, $rhs:ty, $output_type: ident, $trait:ident, $fn_name:ident, $op:tt) => {
-        impl $trait<$rhs> for $lhs {
-            type Output = $output_type;
-
-            fn $fn_name(self, rhs: $rhs) -> Self::Output {
-                Vec3::new(
-                    self[0] $op rhs,
-                    self[1] $op rhs,
-                    self[2] $op rhs,
-                )
-            }
-        }
-    };
-    ($lhs:ty, &$rhs:ty, $output_type: ident, $trait:ident, $fn_name:ident, $op:tt) => {
-        impl $trait<&$rhs> for $lhs {
-            type Output = $output_type;
-
-            fn $fn_name(self, rhs: &$rhs) -> Self::Output {
-                Vec3::new(
-                    self[0] $op rhs,
-                    self[1] $op rhs,
-                    self[2] $op rhs,
-                )
-            }
-        }
-    };
-    (&$lhs:ty, $rhs:ty, $output_type: ident, $trait:ident, $fn_name:ident, $op:tt) => {
-        impl $trait<$rhs> for &$lhs {
-            type Output = $output_type;
-
-            fn $fn_name(self, rhs: $rhs) -> Self::Output {
-                Vec3::new(
-                    self[0] $op rhs,
-                    self[1] $op rhs,
-                    self[2] $op rhs,
-                )
-            }
-        }
-    };
-    (&$lhs:ty, &$rhs:ty, $output_type: ident, $trait:ident, $fn_name:ident, $op:tt) => {
-        impl $trait<&$rhs> for &$lhs {
-            type Output = $output_type;
-
-            fn $fn_name(self, rhs: &$rhs) -> Self::Output {
-                Vec3::new(
-                    self[0] $op rhs,
-                    self[1] $op rhs,
-                    self[2] $op rhs,
-                )
-            }
-        }
-    };
-}
-macro_rules! operation_generic_flip {
-    ($lhs:ty, $rhs:ty, $output_type: ident, $trait:ident, $fn_name:ident, $op:tt) => {
-        impl $trait<$rhs> for $lhs {
-            type Output = $output_type;
-
-            fn $fn_name(self, rhs: $rhs) -> Self::Output {
-                Vec3::new(
-                    self $op rhs[0],
-                    self $op rhs[1],
-                    self $op rhs[2],
-                )
-            }
-        }
-    };
-    ($lhs:ty, &$rhs:ty, $output_type: ident, $trait:ident, $fn_name:ident, $op:tt) => {
-        impl $trait<&$rhs> for $lhs {
-            type Output = $output_type;
-
-            fn $fn_name(self, rhs: &$rhs) -> Self::Output {
-                Vec3::new(
-                    self $op rhs[0],
-                    self $op rhs[1],
-                    self $op rhs[2],
-                )
-            }
-        }
-    };
-    (&$lhs:ty, $rhs:ty, $output_type: ident, $trait:ident, $fn_name:ident, $op:tt) => {
-        impl $trait<$rhs> for &$lhs {
-            type Output = $output_type;
-
-            fn $fn_name(self, rhs: $rhs) -> Self::Output {
-                Vec3::new(
-                    self $op rhs[0],
-                    self $op rhs[1],
-                    self $op rhs[2],
-                )
-            }
-        }
-    };
-    (&$lhs:ty, &$rhs:ty, $output_type: ident, $trait:ident, $fn_name:ident, $op:tt) => {
-        impl $trait<&$rhs> for &$lhs {
-            type Output = $output_type;
-
-            fn $fn_name(self, rhs: &$rhs) -> Self::Output {
-                Vec3::new(
-                    self $op rhs[0],
-                    self $op rhs[1],
-                    self $op rhs[2],
-                )
-            }
-        }
-    };
-}
-
-macro_rules! floating_point_operation {
-    ($trait:ident, $fn_name:ident, $op:tt) => {
-        operation_generic!(Vec3, f64, Vec3, $trait, $fn_name, $op);
-        operation_generic!(Vec3, &f64, Vec3, $trait, $fn_name, $op);
-        operation_generic!(&Vec3, f64, Vec3, $trait, $fn_name, $op);
-        operation_generic!(&Vec3, &f64, Vec3, $trait, $fn_name, $op);
-
-        operation_generic_flip!(f64, Vec3, Vec3, $trait, $fn_name, $op);
-        operation_generic_flip!(f64, &Vec3, Vec3, $trait, $fn_name, $op);
-        operation_generic_flip!(&f64, Vec3, Vec3, $trait, $fn_name, $op);
-        operation_generic_flip!(&f64, &Vec3, Vec3, $trait, $fn_name, $op);
-    };
-}
-
-macro_rules! on_each_operation {
-    ($trait:ident, $fn_name:ident) => {
-        impl $trait for Vec3 {
-            type Output = Vec3;
-
-            fn $fn_name(self) -> Self::Output {
-                Vec3::new(self[0].$fn_name(), self[1].$fn_name(), self[2].$fn_name())
-            }
-        }
-    };
-}
-
 pairwise_operation!(Add, add, +);
+pairwise_mut_operation!(AddAssign, add_assign, +=);
 pairwise_operation!(Sub, sub, -);
+pairwise_mut_operation!(SubAssign, sub_assign, -=);
+pairwise_operation!(Mul, mul, *);
+pairwise_mut_operation!(MulAssign, mul_assign, *=);
 
 floating_point_operation!(Add, add, +);
 floating_point_operation!(Sub, sub, -);
