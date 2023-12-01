@@ -1,4 +1,9 @@
-use crate::{point3, x, y, z, Point3};
+use std::sync::Arc;
+
+use once_cell::sync::Lazy;
+
+use crate::material::{Lambertian, Metal};
+use crate::{color, point3, x, y, z, Color, Point3};
 
 // IMAGE
 pub static ASPECT_RATIO: f64 = 16.0 / 9.0;
@@ -21,3 +26,15 @@ pub static LOWER_LEFT_CORNER: &Point3 = &point3![
     ORIGIN.0[2] - HORIZONTAL.0[2] / 2.0 - VERTICAL.0[2] / 2.0 + z!(FOCAL_LENGTH).0[2]
 ];
 // &(ORIGIN - HORIZONTAL / 2.0 - VERTICAL / 2.0 + z!(FOCAL_LENGTH));
+
+// CONSTANTS
+pub static NEAR_ZERO_EPSILON: f64 = 1.0e-8;
+
+// MATERIALS
+pub static GROUND_MATERIAL: Lazy<Arc<Lambertian>> =
+    Lazy::new(|| Arc::new(Lambertian::new(color!(0.8, 0.8, 0.0))));
+pub static CENTER_SPHERE_MATERIAL: Lazy<Arc<Lambertian>> =
+    Lazy::new(|| Arc::new(Lambertian::new(color!(0.7, 0.3, 0.3))));
+pub static LEFT_SPHERE_MATERIAL: Lazy<Arc<Metal>> = Lazy::new(|| Arc::new(Metal::new(color!(0.8))));
+pub static RIGHT_SPHERE_MATERIAL: Lazy<Arc<Metal>> =
+    Lazy::new(|| Arc::new(Metal::new(color!(0.8, 0.6, 0.2))));

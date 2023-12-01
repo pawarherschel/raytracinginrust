@@ -6,7 +6,7 @@ use std::ops::{
 
 use rand::prelude::*;
 
-use crate::config::SAMPLES_PER_PIXEL;
+use crate::config::{NEAR_ZERO_EPSILON, SAMPLES_PER_PIXEL};
 use crate::vec3;
 
 #[derive(Clone, Default, Debug, PartialOrd, PartialEq)]
@@ -57,8 +57,20 @@ impl Vec3 {
         self.dot(self).sqrt()
     }
 
-    pub fn normalize(self) -> Vec3 {
+    pub fn normalize(&self) -> Vec3 {
         self.clone() / self.length()
+    }
+
+    pub fn abs(&self) -> Self {
+        vec3![self[0].abs(), self[1].abs(), self[2].abs()]
+    }
+
+    pub fn is_near_zero(&self) -> bool {
+        self.abs() < NEAR_ZERO_EPSILON.abs()
+    }
+
+    pub fn reflect(&self, normal: &Self) -> Self {
+        self - 2.0 * self.dot(normal) * normal
     }
 }
 

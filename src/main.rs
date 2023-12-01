@@ -3,7 +3,10 @@ use std::io::{stderr, Write};
 use rand::Rng;
 
 use raytracing::camera::Camera;
-use raytracing::config::{IMAGE_HEIGHT, IMAGE_WIDTH, MAX_DEPTH, SAMPLES_PER_PIXEL};
+use raytracing::config::{
+    CENTER_SPHERE_MATERIAL, GROUND_MATERIAL, IMAGE_HEIGHT, IMAGE_WIDTH, LEFT_SPHERE_MATERIAL,
+    MAX_DEPTH, RIGHT_SPHERE_MATERIAL, SAMPLES_PER_PIXEL,
+};
 use raytracing::hit::Hittable;
 use raytracing::sphere::Sphere;
 use raytracing::world::World;
@@ -12,8 +15,26 @@ use raytracing::*;
 fn main() {
     // World
     let world: Vec<Box<dyn Hittable>> = vec![
-        Box::new(Sphere::new(Point3::new(0.0, 0.0, -1.0), 0.5)),
-        Box::new(Sphere::new(Point3::new(0.0, -100.5, -1.0), 100.0)),
+        Box::new(Sphere::new(
+            point3!(0.0, 0.0, -1.0),
+            0.5,
+            CENTER_SPHERE_MATERIAL.clone(),
+        )),
+        Box::new(Sphere::new(
+            point3!(0.0, -100.5, -1.0),
+            100.0,
+            GROUND_MATERIAL.clone(),
+        )),
+        Box::new(Sphere::new(
+            point3!(-1, 0, -1),
+            0.5,
+            LEFT_SPHERE_MATERIAL.clone(),
+        )),
+        Box::new(Sphere::new(
+            point3!(1, 0, -1),
+            0.5,
+            RIGHT_SPHERE_MATERIAL.clone(),
+        )),
     ];
 
     // let world: Vec<Box<dyn Hittable>> = vec![
@@ -78,12 +99,11 @@ pub fn ray_color(ray: &Ray, world: &World, depth: u64) -> Color {
         return color![0];
     }
     if let Some(record) = world.hit(ray, 0.001, f64::INFINITY) {
-        let target = record.point.clone()
-            + record.normal.clone().unwrap()
-            + Vec3::random_in_unit_sphere().normalize();
-        let r = Ray::new(record.point.clone(), target - record.point);
-
-        0.5 * ray_color(&r, world, depth - 1)
+        if let Some((attenuation_color, scattered_ray)) = record.material.scatter(ray, &record) {
+            attenuation_color * ray_color(&scattered_ray, world, depth - 1)
+        } else {
+            color!(0)
+        }
         // remap!(value: record.normal.unwrap(), from: -1_f64, 1_f64, to: 0_f64, 1_f64)
     } else {
         let direction = ray.get_direction();

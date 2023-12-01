@@ -1,10 +1,12 @@
 #![allow(unused)]
 #![feature(stmt_expr_attributes)]
+
 pub mod camera;
 pub mod config;
-pub mod cube;
+// pub mod cube;
 pub mod hit;
 pub mod macros;
+pub mod material;
 pub mod math;
 pub mod ray;
 pub mod sphere;
@@ -26,10 +28,14 @@ pub type Color = Vec3;
 #[macro_export]
 macro_rules! color {
     ($l: expr) => {{
-        Color::new($l as f64, $l as f64, $l as f64)
+        Color {
+            0: [$l as f64, $l as f64, $l as f64],
+        }
     }};
     ($l0: expr, $l1: expr, $l2: expr) => {{
-        Color::new($l0 as f64, $l1 as f64, $l2 as f64)
+        Color {
+            0: [$l0 as f64, $l1 as f64, $l2 as f64],
+        }
     }};
 }
 
