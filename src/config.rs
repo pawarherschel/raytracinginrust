@@ -35,6 +35,7 @@ pub static GROUND_MATERIAL: Lazy<Arc<Lambertian>> =
     Lazy::new(|| Arc::new(Lambertian::new(color!(0.8, 0.8, 0.0))));
 pub static CENTER_SPHERE_MATERIAL: Lazy<Arc<Lambertian>> =
     Lazy::new(|| Arc::new(Lambertian::new(color!(0.7, 0.3, 0.3))));
-pub static LEFT_SPHERE_MATERIAL: Lazy<Arc<Metal>> = Lazy::new(|| Arc::new(Metal::new(color!(0.8))));
+pub static LEFT_SPHERE_MATERIAL: Lazy<Arc<Metal>> =
+    Lazy::new(|| Arc::new(Metal::new(color!(0.8), 0.3)));
 pub static RIGHT_SPHERE_MATERIAL: Lazy<Arc<Metal>> =
-    Lazy::new(|| Arc::new(Metal::new(color!(0.8, 0.6, 0.2))));
+    Lazy::new(|| Arc::new(Metal::new(color!(0.8, 0.6, 0.2), 1.0)));
