@@ -4,13 +4,12 @@ use std::time::Instant;
 
 use image::Rgb;
 use indicatif::ParallelProgressIterator;
-use rand::Rng;
 use rayon::prelude::*;
 
 use raytracing::config::*;
 use raytracing::prelude::*;
 use raytracing::time_it;
-use raytracing::{color, point3};
+use raytracing::{color, point3, remap};
 
 fn main() {
     let start = Instant::now();
@@ -56,17 +55,27 @@ fn main() {
 
     let (sender, receiver) = mpsc::channel();
 
+    let square_side_f64 = (SAMPLES_PER_PIXEL as f64).sqrt();
+    let square_side_u64 = square_side_f64 as u64;
+    if square_side_f64.floor() as u64 != square_side_u64 {
+        eprintln!("SAMPLES_PER_PIXEL must be perfect square");
+        std::process::exit(-1);
+    }
+
     time_it!(at once | "rendering" => scanlines
         .into_par_iter()
         .progress_with(get_pb(scanlines_len, "rendering"))
         .for_each(|j| {
             (0..IMAGE_WIDTH).into_par_iter().for_each(|i| {
-                let mut rng = rand::thread_rng();
-
                 let mut pixel_color = color!(0);
-                for _ in 0..SAMPLES_PER_PIXEL {
-                    let random_u: f64 = rng.gen();
-                    let random_v: f64 = rng.gen();
+                for idx in 0..SAMPLES_PER_PIXEL {
+                    let idx = idx + 1;
+                    let random_u: f64 = remap!(
+                        value: (idx % square_side_u64) as f64,
+                        from: 0.0, square_side_f64,
+                        to: 0.0, 1.0
+                    );
+                    let random_v: f64 = square_side_f64 / (idx as f64);
 
                     let u = ((i as f64) + random_u) / ((IMAGE_WIDTH - 1) as f64);
                     let v = ((j as f64) + random_v) / ((IMAGE_HEIGHT - 1) as f64);
