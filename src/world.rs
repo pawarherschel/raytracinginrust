@@ -7,7 +7,7 @@ pub type World = Arc<Vec<Arc<dyn Hittable + Send + Sync>>>;
 
 impl Hittable for World {
     #[inline(always)]
-    fn hit(&self, ray: &Ray, t_min: f64, t_max: f64) -> Option<HitRecord> {
+    fn hit(&self, ray: &Ray, t_min: f32, t_max: f32) -> Option<HitRecord> {
         // iterate through all hittable objects and if they intersect then get
         // the closest to camera
         let (output, _) =

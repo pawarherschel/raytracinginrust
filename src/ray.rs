@@ -15,7 +15,7 @@ impl Ray {
     }
 
     #[inline(always)]
-    pub fn at(&self, t: f64) -> Point3 {
+    pub fn at(&self, t: f32) -> Point3 {
         &self.origin + &(&self.direction * t)
     }
 
@@ -39,17 +39,17 @@ impl Ray {
         if depth == 0 {
             return color![0];
         }
-        if let Some(record) = world.hit(self, 0.001, f64::INFINITY) {
+        if let Some(record) = world.hit(self, 0.001, f32::INFINITY) {
             if let Some((attenuation_color, scattered_ray)) = record.material.scatter(self, &record)
             {
                 attenuation_color * scattered_ray.color(world, depth - 1)
             } else {
                 color!(0)
             }
-            // remap!(value: record.normal.unwrap(), from: -1_f64, 1_f64, to: 0_f64, 1_f64)
+            // remap!(value: record.normal.unwrap(), from: -1_f32, 1_f32, to: 0_f32, 1_f32)
         } else {
             let direction = self.get_direction();
-            let t = remap!(value: direction.y(), from: -1_f64, 1_f64, to: 0_f64, 1_f64);
+            let t = remap!(value: direction.y(), from: -1_f32, 1_f32, to: 0_f32, 1_f32);
 
             lerp!(&white!(), t, &color![0.5, 0.7, 1])
         }

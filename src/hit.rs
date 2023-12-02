@@ -8,17 +8,17 @@ pub struct HitRecord {
     pub point: Point3,
     pub normal: Option<Vec3>,
     pub material: Arc<dyn Scatter>,
-    pub t: f64,
+    pub t: f32,
     pub front_face: Option<bool>,
 }
 
 pub trait Hittable: Send + Sync {
-    fn hit(&self, ray: &Ray, t_min: f64, t_max: f64) -> Option<HitRecord>;
+    fn hit(&self, ray: &Ray, t_min: f32, t_max: f32) -> Option<HitRecord>;
 }
 
 impl HitRecord {
     #[inline(always)]
-    pub fn new(point: Point3, t: f64, material: Arc<dyn Scatter>) -> Self {
+    pub fn new(point: Point3, t: f32, material: Arc<dyn Scatter>) -> Self {
         HitRecord {
             point,
             normal: None,

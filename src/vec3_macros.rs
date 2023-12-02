@@ -5,7 +5,6 @@ use std::ops::MulAssign;
 use std::ops::Sub;
 use std::ops::SubAssign;
 use std::ops::{Add, Neg};
-use std::simd::f64x4;
 
 use crate::cimpl;
 use crate::vec3::Vec3;
@@ -16,7 +15,7 @@ macro_rules! vec3 {
         vec3!($l, $l, $l)
     }};
     ($l0: expr, $l1: expr, $l2: expr) => {{
-        Vec3([$l0 as f64, $l1 as f64, $l2 as f64])
+        Vec3([$l0 as f32, $l1 as f32, $l2 as f32])
     }};
 }
 
@@ -28,10 +27,10 @@ macro_rules! impl_simd {
 
             #[inline(always)]
             fn $fn(self, rhs: $rhs) -> Self::Output {
-                let left = self.get_f64x4();
-                let right = rhs.get_f64x4();
+                let left = self.get_f32x4();
+                let right = rhs.get_f32x4();
 
-                Self::Output::new_from_f64x4(left $op right)
+                Self::Output::new_from_f32x4(left $op right)
             }
         }
     };
@@ -41,10 +40,10 @@ macro_rules! impl_simd {
 
             #[inline(always)]
             fn $fn(self, rhs: $rhs) -> Self::Output {
-                let left = self.get_f64x4();
-                let right = f64x4::splat(rhs);
+                let left = self.get_f32x4();
+                let right = f32x4::splat(rhs);
 
-                Self::Output::new_from_f64x4(left $op right)
+                Self::Output::new_from_f32x4(left $op right)
             }
         }
     };
@@ -54,10 +53,10 @@ macro_rules! impl_simd {
 
             #[inline(always)]
             fn $fn(self, rhs: $rhs) -> Self::Output {
-                let left = f64x4::splat(self);
-                let right = rhs.get_f64x4();
+                let left = f32x4::splat(self);
+                let right = rhs.get_f32x4();
 
-                Self::Output::new_from_f64x4(left $op right)
+                Self::Output::new_from_f32x4(left $op right)
             }
         }
     };
@@ -65,20 +64,20 @@ macro_rules! impl_simd {
 
 //
 // Vec3 w/ Vec3
-impl_simd!(trait: Add, self: Vec3, other: Vec3, output: Vec3, fn: add, op: + | 3, 3);
-// impl_simd!(trait: Add, self: Vec3, other: &Vec3, output: Vec3, fn: add, op: + | 3, 3);
-// impl_simd!(trait: Add, self: &Vec3, other: Vec3, output: Vec3, fn: add, op: + | 3, 3);
-impl_simd!(trait: Add, self: &Vec3, other: &Vec3, output: Vec3, fn: add, op: + | 3, 3);
+cimpl!(trait: Add, self: Vec3, other: Vec3, output: Vec3, fn: add, op: + | 3, 3);
+// cimpl!(trait: Add, self: Vec3, other: &Vec3, output: Vec3, fn: add, op: + | 3, 3);
+// cimpl!(trait: Add, self: &Vec3, other: Vec3, output: Vec3, fn: add, op: + | 3, 3);
+cimpl!(trait: Add, self: &Vec3, other: &Vec3, output: Vec3, fn: add, op: + | 3, 3);
 
-impl_simd!(trait: Sub, self: Vec3, other: Vec3, output: Vec3, fn: sub, op: - | 3, 3);
-// impl_simd!(trait: Sub, self: Vec3, other: &Vec3, output: Vec3, fn: sub, op: - | 3, 3);
-// impl_simd!(trait: Sub, self: &Vec3, other: Vec3, output: Vec3, fn: sub, op: - | 3, 3);
-impl_simd!(trait: Sub, self: &Vec3, other: &Vec3, output: Vec3, fn: sub, op: - | 3, 3);
+cimpl!(trait: Sub, self: Vec3, other: Vec3, output: Vec3, fn: sub, op: - | 3, 3);
+// cimpl!(trait: Sub, self: Vec3, other: &Vec3, output: Vec3, fn: sub, op: - | 3, 3);
+// cimpl!(trait: Sub, self: &Vec3, other: Vec3, output: Vec3, fn: sub, op: - | 3, 3);
+cimpl!(trait: Sub, self: &Vec3, other: &Vec3, output: Vec3, fn: sub, op: - | 3, 3);
 
-impl_simd!(trait: Mul, self: Vec3, other: Vec3, output: Vec3, fn: mul, op: * | 3, 3);
-// impl_simd!(trait: Mul, self: Vec3, other: &Vec3, output: Vec3, fn: mul, op: * | 3, 3);
-// impl_simd!(trait: Mul, self: &Vec3, other: Vec3, output: Vec3, fn: mul, op: * | 3, 3);
-impl_simd!(trait: Mul, self: &Vec3, other: &Vec3, output: Vec3, fn: mul, op: * | 3, 3);
+cimpl!(trait: Mul, self: Vec3, other: Vec3, output: Vec3, fn: mul, op: * | 3, 3);
+// cimpl!(trait: Mul, self: Vec3, other: &Vec3, output: Vec3, fn: mul, op: * | 3, 3);
+// cimpl!(trait: Mul, self: &Vec3, other: Vec3, output: Vec3, fn: mul, op: * | 3, 3);
+cimpl!(trait: Mul, self: &Vec3, other: &Vec3, output: Vec3, fn: mul, op: * | 3, 3);
 
 cimpl!(trait: AddAssign, ref mut self: Vec3, other: Vec3, fn: add_assign, op: += | 3, 3);
 cimpl!(trait: AddAssign, ref mut self: Vec3, other: &Vec3, fn: add_assign, op: += | 3, 3);
@@ -90,23 +89,23 @@ cimpl!(trait: MulAssign, ref mut self: Vec3, other: Vec3, fn: mul_assign, op: *=
 cimpl!(trait: MulAssign, ref mut self: Vec3, other: &Vec3, fn: mul_assign, op: *= | 3, 3);
 
 //
-// Vec3 w/ f64
-cimpl!(trait: Add, self: Vec3, other: f64, output: Vec3, fn: add, op: + | 3, 1);
+// Vec3 w/ f32
+cimpl!(trait: Add, self: Vec3, other: f32, output: Vec3, fn: add, op: + | 3, 1);
 
-cimpl!(trait: Sub, self: Vec3, other: f64, output: Vec3, fn: sub, op: - | 3, 1);
+cimpl!(trait: Sub, self: Vec3, other: f32, output: Vec3, fn: sub, op: - | 3, 1);
 
-// impl_simd!(trait: Mul, self: Vec3, other: f64, output: Vec3, fn: mul, op: * | 3, 1);
-impl_simd!(trait: Mul, self: &Vec3, other: f64, output: Vec3, fn: mul, op: * | 3, 1);
+// cimpl!(trait: Mul, self: Vec3, other: f32, output: Vec3, fn: mul, op: * | 3, 1);
+cimpl!(trait: Mul, self: &Vec3, other: f32, output: Vec3, fn: mul, op: * | 3, 1);
 
-cimpl!(trait: Div, self: Vec3, other: f64, output: Vec3, fn: div, op: / | 3, 1);
-cimpl!(trait: Div, self: &Vec3, other: f64, output: Vec3, fn: div, op: / | 3, 1);
+cimpl!(trait: Div, self: Vec3, other: f32, output: Vec3, fn: div, op: / | 3, 1);
+cimpl!(trait: Div, self: &Vec3, other: f32, output: Vec3, fn: div, op: / | 3, 1);
 
 //
-// f64 w/ Vec3
-cimpl!(trait: Add, self: f64, other: Vec3, output: Vec3, fn: add, op: + | 1, 3);
+// f32 w/ Vec3
+cimpl!(trait: Add, self: f32, other: Vec3, output: Vec3, fn: add, op: + | 1, 3);
 
-// impl_simd!(trait: Mul, self: f64, other: Vec3, output: Vec3, fn: mul, op: * | 1, 3);
-impl_simd!(trait: Mul, self: f64, other: &Vec3, output: Vec3, fn: mul, op: * | 1, 3);
+// cimpl!(trait: Mul, self: f32, other: Vec3, output: Vec3, fn: mul, op: * | 1, 3);
+cimpl!(trait: Mul, self: f32, other: &Vec3, output: Vec3, fn: mul, op: * | 1, 3);
 
 //
 // unary Vec3
@@ -115,20 +114,20 @@ cimpl!(trait: Neg, self: Vec3, output: Vec3, fn: neg, op: - | 3);
 cimpl!(self: Vec3, output: Vec3, fn: sqrt, perform: sqrt | 3);
 cimpl!(ref self: Vec3, output: Vec3, fn: abs, perform: abs | 3);
 
-cimpl!(self: Vec3, output: Vec3, fn: clamp, perform: clamp, args: min:f64, max:f64, | 3);
+cimpl!(self: Vec3, output: Vec3, fn: clamp, perform: clamp, args: min:f32, max:f32, | 3);
 
 //
 //
 //
 
-impl Sub<f64> for &Vec3 {
-    type Output = Vec3;
-
-    #[inline(always)]
-    fn sub(self, rhs: f64) -> Self::Output {
-        let left = self.get_f64x4();
-        let right = f64x4::splat(rhs);
-
-        Self::Output::new_from_f64x4(left * right)
-    }
-}
+// impl Sub<f32> for &Vec3 {
+//     type Output = Vec3;
+//
+//     #[inline(always)]
+//     fn sub(self, rhs: f32) -> Self::Output {
+//         let left = self.get_f32x4();
+//         let right = f32x4::splat(rhs);
+//
+//         Self::Output::new_from_f32x4(left * right)
+//     }
+// }

@@ -2,12 +2,12 @@
 macro_rules! color {
     ($l: expr) => {{
         Color {
-            0: [$l as f64, $l as f64, $l as f64],
+            0: [$l as f32, $l as f32, $l as f32],
         }
     }};
     ($l0: expr, $l1: expr, $l2: expr) => {{
         Color {
-            0: [$l0 as f64, $l1 as f64, $l2 as f64],
+            0: [$l0 as f32, $l1 as f32, $l2 as f32],
         }
     }};
 }

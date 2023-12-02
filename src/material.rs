@@ -38,12 +38,12 @@ impl Scatter for Lambertian {
 #[derive(Debug, Clone)]
 pub struct Metal {
     albedo: Color,
-    fuzz: f64,
+    fuzz: f32,
 }
 
 impl Metal {
     #[inline(always)]
-    pub fn new(albedo: Color, fuzz: f64) -> Self {
+    pub fn new(albedo: Color, fuzz: f32) -> Self {
         Self { albedo, fuzz }
     }
 }

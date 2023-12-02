@@ -1,14 +1,14 @@
 use std::fs;
-use std::sync::{mpsc, Arc};
+use std::sync::{Arc, mpsc};
 use std::time::Instant;
 
 use indicatif::ParallelProgressIterator;
 use rayon::prelude::*;
 
+use raytracing::{color, point3, remap};
 use raytracing::config::*;
 use raytracing::prelude::*;
 use raytracing::time_it;
-use raytracing::{color, point3, remap};
 
 fn main() {
     let start = Instant::now();
@@ -54,9 +54,9 @@ fn main() {
 
     let (sender, receiver) = mpsc::channel();
 
-    let square_side_f64 = (SAMPLES_PER_PIXEL as f64).sqrt();
-    let square_side_u64 = square_side_f64 as u64;
-    if square_side_f64.floor() as u64 != square_side_u64 {
+    let square_side_f32 = (SAMPLES_PER_PIXEL as f32).sqrt();
+    let square_side_u64 = square_side_f32 as u64;
+    if square_side_f32.floor() as u64 != square_side_u64 {
         eprintln!("SAMPLES_PER_PIXEL must be perfect square");
         std::process::exit(-1);
     }
@@ -69,15 +69,15 @@ fn main() {
                 let mut pixel_color = color!(0);
                 for idx in 0..SAMPLES_PER_PIXEL {
                     let idx = idx + 1;
-                    let random_u: f64 = remap!(
-                        value: (idx % square_side_u64) as f64,
-                        from: 0.0, square_side_f64,
+                    let random_u: f32 = remap!(
+                        value: (idx % square_side_u64) as f32,
+                        from: 0.0, square_side_f32,
                         to: 0.0, 1.0
                     );
-                    let random_v: f64 = square_side_f64 / (idx as f64);
+                    let random_v: f32 = square_side_f32 / (idx as f32);
 
-                    let u = ((i as f64) + random_u) / ((IMAGE_WIDTH - 1) as f64);
-                    let v = ((j as f64) + random_v) / ((IMAGE_HEIGHT - 1) as f64);
+                    let u = ((i as f32) + random_u) / ((IMAGE_WIDTH - 1) as f32);
+                    let v = ((j as f32) + random_v) / ((IMAGE_HEIGHT - 1) as f32);
 
                     let ray = camera.get_ray(u, v);
 

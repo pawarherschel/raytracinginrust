@@ -558,7 +558,7 @@ macro_rules! cimpl {
         }
     };
     //
-    // cimpl!(self: Vec3, output: Vec3, fn: clamp, perform: clamp, args: min:f64, max:f64 | 3);
+    // cimpl!(self: Vec3, output: Vec3, fn: clamp, perform: clamp, args: min:f32, max:f32 | 3);
     (self: $lhs:ty, output: $output:ty, fn: $fn:ident, perform: $action:ident, args: $($arg_ident:ident:$arg_ty:ty, )+ | 3) => {
         impl $lhs {
             #[inline(always)]

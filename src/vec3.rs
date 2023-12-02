@@ -1,7 +1,7 @@
 use std::cmp::Ordering;
 use std::fmt::Display;
 use std::ops::{Add, Div, Index, IndexMut, Mul, Neg, Range, Sub};
-use std::simd::f64x4;
+use std::simd::f32x4;
 
 use rand::prelude::*;
 
@@ -10,19 +10,19 @@ use crate::prelude::Color;
 use crate::vec3;
 
 #[derive(Clone, Default, Debug, PartialOrd, PartialEq)]
-pub struct Vec3(pub [f64; 3]);
+pub struct Vec3(pub [f32; 3]);
 
 impl Vec3 {
     #[inline(always)]
-    pub fn new(a: f64, b: f64, c: f64) -> Self {
+    pub fn new(a: f32, b: f32, c: f32) -> Self {
         Self([a, b, c])
     }
     #[inline(always)]
-    pub fn new_from_array(array: [f64; 3]) -> Self {
+    pub fn new_from_array(array: [f32; 3]) -> Self {
         Self(array)
     }
     #[inline(always)]
-    pub fn new_from_f64x4(simd: f64x4) -> Self {
+    pub fn new_from_f32x4(simd: f32x4) -> Self {
         // let op = *simd.as_array().first_chunk().unwrap();
         // let array = simd.to_array();
         Self(*simd.as_array().first_chunk().unwrap())
@@ -31,40 +31,40 @@ impl Vec3 {
 
 impl Vec3 {
     #[inline(always)]
-    pub fn x(&self) -> f64 {
+    pub fn x(&self) -> f32 {
         self[0]
     }
     #[inline(always)]
-    pub fn y(&self) -> f64 {
+    pub fn y(&self) -> f32 {
         self[1]
     }
     #[inline(always)]
-    pub fn z(&self) -> f64 {
+    pub fn z(&self) -> f32 {
         self[2]
     }
 
     #[inline(always)]
-    pub fn r(&self) -> f64 {
+    pub fn r(&self) -> f32 {
         self[0]
     }
     #[inline(always)]
-    pub fn g(&self) -> f64 {
+    pub fn g(&self) -> f32 {
         self[1]
     }
     #[inline(always)]
-    pub fn b(&self) -> f64 {
+    pub fn b(&self) -> f32 {
         self[2]
     }
 
     #[inline(always)]
-    pub fn get_f64x4(&self) -> f64x4 {
-        f64x4::from_array([self.0[0], self.0[1], self.0[2], 0.0])
+    pub fn get_f32x4(&self) -> f32x4 {
+        f32x4::from_array([self.0[0], self.0[1], self.0[2], 0.0])
     }
 }
 
 impl Vec3 {
     #[inline(always)]
-    pub fn dot(&self, rhs: &Vec3) -> f64 {
+    pub fn dot(&self, rhs: &Vec3) -> f32 {
         self.x() * rhs.x() + self.y() * rhs.y() + self.z() * rhs.z()
     }
 
@@ -78,7 +78,7 @@ impl Vec3 {
     }
 
     #[inline(always)]
-    pub fn length(&self) -> f64 {
+    pub fn length(&self) -> f32 {
         self.dot(self).sqrt()
     }
 
@@ -101,7 +101,7 @@ impl Vec3 {
 impl Vec3 {
     // todo!("Optimize this")
     #[inline(always)]
-    pub fn random(r: Range<f64>) -> Vec3 {
+    pub fn random(r: Range<f32>) -> Vec3 {
         let mut rng = thread_rng();
 
         vec3![rng.gen_range(r.clone())]
@@ -121,7 +121,7 @@ impl Vec3 {
 }
 
 impl Index<usize> for Vec3 {
-    type Output = f64;
+    type Output = f32;
 
     #[inline(always)]
     fn index(&self, index: usize) -> &Self::Output {
@@ -136,16 +136,16 @@ impl IndexMut<usize> for Vec3 {
     }
 }
 
-impl PartialEq<f64> for Vec3 {
+impl PartialEq<f32> for Vec3 {
     #[inline(always)]
-    fn eq(&self, other: &f64) -> bool {
+    fn eq(&self, other: &f32) -> bool {
         self[0] == *other && self[1] == *other && self[2] == *other
     }
 }
 
-impl PartialOrd<f64> for Vec3 {
+impl PartialOrd<f32> for Vec3 {
     #[inline(always)]
-    fn partial_cmp(&self, other: &f64) -> Option<Ordering> {
+    fn partial_cmp(&self, other: &f32) -> Option<Ordering> {
         let o0 = self[0].partial_cmp(other).unwrap();
         let o1 = self[1].partial_cmp(other).unwrap();
         let o2 = self[2].partial_cmp(other).unwrap();
@@ -162,7 +162,7 @@ impl Vec3 {
     #[inline(always)]
     pub fn fmt_color(&self) -> String {
         let Color([r, g, b]) =
-            (256_f64 * &((((self) / SAMPLES_PER_PIXEL as f64).sqrt()).clamp(0.0, 0.999)));
+            (256_f32 * &((((self) / SAMPLES_PER_PIXEL as f32).sqrt()).clamp(0.0, 0.999)));
         let (r, g, b) = (r as u64, g as u64, b as u64);
         format!("{} {} {}", r, g, b)
     }
@@ -170,7 +170,7 @@ impl Vec3 {
     #[inline(always)]
     pub fn fmt_u8(&self) -> [u8; 3] {
         let Color([r, g, b]) =
-            (256_f64 * &((((self) / SAMPLES_PER_PIXEL as f64).sqrt()).clamp(0.0, 0.999)));
+            (256_f32 * &((((self) / SAMPLES_PER_PIXEL as f32).sqrt()).clamp(0.0, 0.999)));
         let (r, g, b) = (r as u8, g as u8, b as u8);
         [r, g, b]
     }
@@ -181,9 +181,9 @@ impl Vec3 {
 //
 //     #[inline(always)]
 //     fn sub(self, rhs: &Color) -> Self::Output {
-//         let left = self.get_f64x4();
-//         let right = rhs.get_f64x4();
+//         let left = self.get_f32x4();
+//         let right = rhs.get_f32x4();
 //
-//         Self::Output::new_from_f64x4(left - right)
+//         Self::Output::new_from_f32x4(left - right)
 //     }
 // }
