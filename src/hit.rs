@@ -1,7 +1,7 @@
 use std::sync::Arc;
 
 use crate::material::Scatter;
-use crate::{Point3, Ray, Vec3};
+use crate::prelude::*;
 
 #[derive(Clone, Debug)]
 pub struct HitRecord {

@@ -1,7 +1,7 @@
 use std::fmt::Debug;
 
 use crate::hit::HitRecord;
-use crate::{Color, Ray, Vec3};
+use crate::prelude::*;
 
 pub trait Scatter: Debug {
     fn scatter(&self, ray_in: &Ray, hit_record: &HitRecord) -> Option<(Color, Ray)>;

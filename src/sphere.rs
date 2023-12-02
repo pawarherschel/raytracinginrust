@@ -2,7 +2,8 @@ use std::sync::Arc;
 
 use crate::hit::{HitRecord, Hittable};
 use crate::material::Scatter;
-use crate::{value, Point3, Ray};
+use crate::prelude::*;
+use crate::value;
 
 #[derive(Clone, Debug)]
 pub struct Sphere {

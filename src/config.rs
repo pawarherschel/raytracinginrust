@@ -3,7 +3,8 @@ use std::sync::Arc;
 use once_cell::sync::Lazy;
 
 use crate::material::{Lambertian, Metal};
-use crate::{color, point3, x, y, z, Color, Point3};
+use crate::prelude::*;
+use crate::{color, point3, x, y, z};
 
 // IMAGE
 pub static ASPECT_RATIO: f64 = 16.0 / 9.0;
