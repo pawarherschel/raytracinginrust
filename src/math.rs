@@ -20,8 +20,8 @@ macro_rules! remap {
 
 #[cfg(test)]
 mod map_tests {
+    use crate::color;
     use crate::prelude::Color;
-    use crate::{color, Color};
 
     #[test]
     fn test0() {
