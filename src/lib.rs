@@ -1,5 +1,7 @@
 #![allow(unused)]
 #![feature(trace_macros)]
+#![feature(portable_simd)]
+#![feature(slice_first_last_chunk)]
 
 pub mod camera;
 pub mod config;

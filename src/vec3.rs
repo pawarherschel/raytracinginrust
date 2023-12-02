@@ -1,6 +1,7 @@
 use std::cmp::Ordering;
 use std::fmt::Display;
 use std::ops::{Add, Div, Index, IndexMut, Mul, Neg, Range, Sub};
+use std::simd::f64x4;
 
 use rand::prelude::*;
 
@@ -15,6 +16,16 @@ impl Vec3 {
     #[inline(always)]
     pub fn new(a: f64, b: f64, c: f64) -> Self {
         Self([a, b, c])
+    }
+    #[inline(always)]
+    pub fn new_from_array(array: [f64; 3]) -> Self {
+        Self(array)
+    }
+    #[inline(always)]
+    pub fn new_from_f64x4(simd: f64x4) -> Self {
+        // let op = *simd.as_array().first_chunk().unwrap();
+        // let array = simd.to_array();
+        Self(*simd.as_array().first_chunk().unwrap())
     }
 }
 
@@ -43,6 +54,11 @@ impl Vec3 {
     #[inline(always)]
     pub fn b(&self) -> f64 {
         self[2]
+    }
+
+    #[inline(always)]
+    pub fn get_f64x4(&self) -> f64x4 {
+        f64x4::from_array([self.0[0], self.0[1], self.0[2], 0.0])
     }
 }
 
@@ -78,7 +94,7 @@ impl Vec3 {
 
     #[inline(always)]
     pub fn reflect(&self, normal: &Self) -> Self {
-        self - 2.0 * self.dot(normal) * normal
+        self - &(2.0 * self.dot(normal) * normal)
     }
 }
 
@@ -146,7 +162,7 @@ impl Vec3 {
     #[inline(always)]
     pub fn fmt_color(&self) -> String {
         let Color([r, g, b]) =
-            (256_f64 * ((((self) / SAMPLES_PER_PIXEL as f64).sqrt()).clamp(0.0, 0.999)));
+            (256_f64 * &((((self) / SAMPLES_PER_PIXEL as f64).sqrt()).clamp(0.0, 0.999)));
         let (r, g, b) = (r as u64, g as u64, b as u64);
         format!("{} {} {}", r, g, b)
     }
@@ -154,8 +170,20 @@ impl Vec3 {
     #[inline(always)]
     pub fn fmt_u8(&self) -> [u8; 3] {
         let Color([r, g, b]) =
-            (256_f64 * ((((self) / SAMPLES_PER_PIXEL as f64).sqrt()).clamp(0.0, 0.999)));
+            (256_f64 * &((((self) / SAMPLES_PER_PIXEL as f64).sqrt()).clamp(0.0, 0.999)));
         let (r, g, b) = (r as u8, g as u8, b as u8);
         [r, g, b]
     }
 }
+//
+// impl Sub<&Vec3> for &Vec3 {
+//     type Output = Vec3;
+//
+//     #[inline(always)]
+//     fn sub(self, rhs: &Color) -> Self::Output {
+//         let left = self.get_f64x4();
+//         let right = rhs.get_f64x4();
+//
+//         Self::Output::new_from_f64x4(left - right)
+//     }
+// }

@@ -57,7 +57,7 @@ impl Scatter for Metal {
             .normalize();
         let scattered = Ray::new(
             hit_record.point.clone(),
-            reflected + self.fuzz * Vec3::random_in_unit_sphere(),
+            reflected + self.fuzz * &Vec3::random_in_unit_sphere(),
         );
 
         if scattered.direction.dot(&hit_record.normal.clone().unwrap()) > 0.0 {

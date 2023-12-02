@@ -1,6 +1,6 @@
+use crate::{color, lerp, remap, white};
 use crate::hit::Hittable;
 use crate::prelude::*;
-use crate::{color, lerp, remap, white};
 
 #[derive(Clone, Default, Debug)]
 pub struct Ray {
@@ -16,7 +16,7 @@ impl Ray {
 
     #[inline(always)]
     pub fn at(&self, t: f64) -> Point3 {
-        &self.origin + &self.direction * t
+        &self.origin + &(&self.direction * t)
     }
 
     #[inline(always)]
@@ -51,7 +51,7 @@ impl Ray {
             let direction = self.get_direction();
             let t = remap!(value: direction.y(), from: -1_f64, 1_f64, to: 0_f64, 1_f64);
 
-            lerp!(white!(), t, color![0.5, 0.7, 1])
+            lerp!(&white!(), t, &color![0.5, 0.7, 1])
         }
     }
 }
