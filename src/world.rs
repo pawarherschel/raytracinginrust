@@ -1,7 +1,7 @@
 use std::sync::Arc;
 
 use crate::hit::{HitRecord, Hittable};
-use crate::*;
+use crate::prelude::*;
 
 pub type World = Arc<Vec<Arc<dyn Hittable + Send + Sync>>>;
 

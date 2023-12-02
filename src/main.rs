@@ -6,8 +6,8 @@ use rand::Rng;
 use rayon::prelude::*;
 
 use raytracing::config::*;
-use raytracing::util::*;
-use raytracing::*;
+use raytracing::prelude::*;
+use raytracing::{color, point3, time_it};
 
 fn main() {
     dbg!(HI_RES);
