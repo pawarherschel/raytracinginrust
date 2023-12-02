@@ -1,5 +1,6 @@
 use std::fs;
 use std::sync::{mpsc, Arc};
+use std::time::Instant;
 
 use indicatif::ParallelProgressIterator;
 use rand::Rng;
@@ -7,9 +8,13 @@ use rayon::prelude::*;
 
 use raytracing::config::*;
 use raytracing::prelude::*;
-use raytracing::{color, point3, time_it};
+use raytracing::time_it;
+use raytracing::{color, point3};
 
 fn main() {
+    let start = Instant::now();
+
+    dbg!(cfg!(debug_assertions));
     dbg!(HI_RES);
 
     // World
@@ -39,7 +44,7 @@ fn main() {
     // Camera
     let camera = Camera::new();
 
-    let mut output = vec![
+    let output = vec![
         "P3".to_string(),
         format!("{} {}", IMAGE_WIDTH, IMAGE_HEIGHT),
         "255".to_string(),
@@ -83,26 +88,23 @@ fn main() {
 
     time_it!("sorting pixels" => pixels.par_sort_by(|(idx1, _), (idx2, _)| idx2.cmp(idx1)));
 
-    for (_, pixel) in pixels {
-        output.push(pixel.fmt_color().to_string());
-    }
+    let output_pixels = time_it!("collecting pixels" =>
+        pixels.into_par_iter().map(|(_, pixel)| pixel.fmt_color().to_string())
+    );
 
-    // let output = time_it!("pushing pixels to output" => {
-    //         let pixels = pixels
-    //             .into_par_iter()
-    //             .map(|(_, it)| it.fmt_color().to_string());
-    //         pre.into_par_iter().chain(pixels).collect::<Vec<String>>()
-    //     });
+    let output = time_it!("collecting output" =>
+        output.into_par_iter().chain(output_pixels).collect::<Vec<String>>()
+    );
 
     println!("output: {}", OUTPUT_FILE);
 
-    time_it!("writing to file" => {
-        if fs::metadata(OUTPUT_FILE).is_ok() {
-            fs::remove_file(OUTPUT_FILE).unwrap();
-        }
+    println!("writing to: {}", output_file);
 
-        fs::write(OUTPUT_FILE, output.join("\n")).unwrap();
-    });
+    if fs::metadata(output_file).is_ok() {
+        fs::remove_file(output_file).unwrap();
+    }
 
-    println!("\x07Done");
+    fs::write(output_file, output.join("\n")).unwrap();
+
+    println!("\x07Done, whole program took {:?}", start.elapsed());
 }

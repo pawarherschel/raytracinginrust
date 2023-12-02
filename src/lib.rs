@@ -1,4 +1,5 @@
 #![allow(unused)]
+#![feature(trace_macros)]
 
 pub mod camera;
 pub mod config;
