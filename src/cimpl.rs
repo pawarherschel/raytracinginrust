@@ -542,7 +542,13 @@ macro_rules! cimpl {
     (ref self: $lhs:ty, output: $output:ty, fn: $fn:ident, perform: $action:ident | 3) => {
         impl $lhs {
             #[inline(always)]
-            pub fn $fn(&self) -> $output {unimplemented!()}
+            pub fn $fn(&self) -> $output {
+                <$output>::new(
+                    self[0].$action(),
+                    self[1].$action(),
+                    self[2].$action(),
+                )
+            }
         }
     };
     (ref mut self: $lhs:ty, output: $output:ty, fn: $fn:ident, perform: $action:ident | 3) => {

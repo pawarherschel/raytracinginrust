@@ -69,4 +69,6 @@ cimpl!(trait: Mul, self: f64, other: &Vec3, output: Vec3, fn: mul, op: * | 1, 3)
 cimpl!(trait: Neg, self: Vec3, output: Vec3, fn: neg, op: - | 3);
 
 cimpl!(self: Vec3, output: Vec3, fn: sqrt, perform: sqrt | 3);
+cimpl!(ref self: Vec3, output: Vec3, fn: abs, perform: abs | 3);
+
 cimpl!(self: Vec3, output: Vec3, fn: clamp, perform: clamp, args: min:f64, max:f64, | 3);
