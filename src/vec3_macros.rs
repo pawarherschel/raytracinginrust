@@ -521,6 +521,9 @@ macro_rules! cimpl {
     };
 }
 
+// regex for searching using template = [$::A-Za-z]*
+// dont forget to \ the | to \|
+
 // Vec3 w/ Vec3
 cimpl!(trait: Add, self: Vec3, other: Vec3, output: Vec3, fn: add, op: + | 3, 3);
 cimpl!(trait: Add, self: Vec3, other: &Vec3, output: Vec3, fn: add, op: + | 3, 3);
