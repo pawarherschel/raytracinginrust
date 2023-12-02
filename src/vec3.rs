@@ -94,12 +94,12 @@ impl Vec3 {
     // todo!("Optimize this")
     #[inline(always)]
     pub fn random_in_unit_sphere() -> Vec3 {
-        loop {
-            let v = Vec3::random(-1.0..1.0);
+        let v = Vec3::random(-1.0..1.0);
 
-            if v.length() < 1.0 {
-                return v;
-            }
+        if v.length() < 1.0 {
+            v
+        } else {
+            v.normalize()
         }
     }
 }
