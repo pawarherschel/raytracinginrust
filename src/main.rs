@@ -96,15 +96,13 @@ fn main() {
         output.into_par_iter().chain(output_pixels).collect::<Vec<String>>()
     );
 
-    println!("output: {}", OUTPUT_FILE);
+    println!("writing to: {}", OUTPUT_FILE);
 
-    println!("writing to: {}", output_file);
-
-    if fs::metadata(output_file).is_ok() {
-        fs::remove_file(output_file).unwrap();
+    if fs::metadata(OUTPUT_FILE).is_ok() {
+        fs::remove_file(OUTPUT_FILE).unwrap();
     }
 
-    fs::write(output_file, output.join("\n")).unwrap();
+    fs::write(OUTPUT_FILE, output.join("\n")).unwrap();
 
     println!("\x07Done, whole program took {:?}", start.elapsed());
 }
