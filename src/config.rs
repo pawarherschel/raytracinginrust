@@ -16,6 +16,7 @@ pub static IMAGE_HEIGHT: u64 = (IMAGE_WIDTH as f64 / ASPECT_RATIO) as u64;
 pub static SAMPLES_PER_PIXEL: u64 = 2 << 6;
 pub static MAX_DEPTH: u64 = 5;
 pub static OUTPUT_FILE: &str = if HI_RES { "hi_res.ppm" } else { "img.ppm" };
+pub static RENDER_FILE: &str = if HI_RES { "hi_res.png" } else { "img.png" };
 
 // CAMERA
 pub static VIEWPORT_HEIGHT: f64 = 2.0;

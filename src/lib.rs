@@ -4,6 +4,7 @@
 pub mod camera;
 pub mod config;
 // pub mod cube;
+pub mod cimpl;
 pub mod color_macros;
 pub mod hit;
 pub mod macros;
