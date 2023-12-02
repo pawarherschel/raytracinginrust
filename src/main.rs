@@ -1,48 +1,49 @@
 use std::fs;
-use std::sync::{mpsc, Arc, RwLock};
+use std::sync::{mpsc, Arc};
+use std::time::Instant;
 
 use indicatif::ParallelProgressIterator;
 use rand::Rng;
 use rayon::prelude::*;
 
-use raytracing::camera::Camera;
-use raytracing::config::*;
-use raytracing::hit::Hittable;
-use raytracing::sphere::Sphere;
-use raytracing::world::World;
-use raytracing::*;
+use raytracing::prelude::*;
+use raytracing::time_it;
+use raytracing::{color, point3};
 
 fn main() {
+    let start = Instant::now();
+
+    dbg!(cfg!(debug_assertions));
     dbg!(HI_RES);
 
     // World
     let world: World = Arc::new(vec![
-        Arc::new(RwLock::new(Sphere::new(
+        Arc::new(Sphere::new(
             point3!(0.0, 0.0, -1.0),
             0.5,
             CENTER_SPHERE_MATERIAL.clone(),
-        ))),
-        Arc::new(RwLock::new(Sphere::new(
+        )),
+        Arc::new(Sphere::new(
             point3!(0.0, -100.5, -1.0),
             100.0,
             GROUND_MATERIAL.clone(),
-        ))),
-        Arc::new(RwLock::new(Sphere::new(
+        )),
+        Arc::new(Sphere::new(
             point3!(-1, 0, -1),
             0.5,
             LEFT_SPHERE_MATERIAL.clone(),
-        ))),
-        Arc::new(RwLock::new(Sphere::new(
+        )),
+        Arc::new(Sphere::new(
             point3!(1, 0, -1),
             0.5,
             RIGHT_SPHERE_MATERIAL.clone(),
-        ))),
+        )),
     ]);
 
     // Camera
     let camera = Camera::new();
 
-    let mut output = vec![
+    let output = vec![
         "P3".to_string(),
         format!("{} {}", IMAGE_WIDTH, IMAGE_HEIGHT),
         "255".to_string(),
@@ -70,7 +71,7 @@ fn main() {
 
                     let ray = camera.get_ray(u, v);
 
-                    pixel_color += ray_color(&ray, &world, MAX_DEPTH);
+                    pixel_color += ray.color(&world, MAX_DEPTH);
                 }
 
                 sender.send((j * IMAGE_WIDTH + i, pixel_color)).unwrap();
@@ -86,13 +87,17 @@ fn main() {
 
     time_it!("sorting pixels" => pixels.par_sort_by(|(idx1, _), (idx2, _)| idx2.cmp(idx1)));
 
-    for (_, pixel) in pixels {
-        output.push(pixel.fmt_color().to_string());
-    }
+    let output_pixels = time_it!("collecting pixels" =>
+        pixels.into_par_iter().map(|(_, pixel)| pixel.fmt_color().to_string())
+    );
+
+    let output = time_it!("collecting output" =>
+        output.into_par_iter().chain(output_pixels).collect::<Vec<String>>()
+    );
 
     let output_file = if HI_RES { "hi_res.ppm" } else { "img.ppm" };
 
-    println!("output: {}", output_file);
+    println!("writing to: {}", output_file);
 
     if fs::metadata(output_file).is_ok() {
         fs::remove_file(output_file).unwrap();
@@ -100,41 +105,5 @@ fn main() {
 
     fs::write(output_file, output.join("\n")).unwrap();
 
-    println!("\x07Done");
-}
-
-pub fn hit_circle(center: &Point3, radius: f64, r: &Ray) -> Option<f64> {
-    let oc = r.get_origin() - center.clone();
-    let r_direction = r.get_direction_denormalized();
-
-    let a = r_direction.length().powi(2);
-    let half_b = oc.dot(&r_direction);
-    let c = oc.length().powi(2) - radius.powi(2);
-
-    let discriminant = half_b.powi(2) - a * c;
-
-    if discriminant < 0.0 {
-        None
-    } else {
-        Some((-half_b - discriminant.sqrt()) / a)
-    }
-}
-
-pub fn ray_color(ray: &Ray, world: &World, depth: u64) -> Color {
-    if depth == 0 {
-        return color![0];
-    }
-    if let Some(record) = world.hit(ray, 0.001, f64::INFINITY) {
-        if let Some((attenuation_color, scattered_ray)) = record.material.scatter(ray, &record) {
-            attenuation_color * ray_color(&scattered_ray, world, depth - 1)
-        } else {
-            color!(0)
-        }
-        // remap!(value: record.normal.unwrap(), from: -1_f64, 1_f64, to: 0_f64, 1_f64)
-    } else {
-        let direction = ray.get_direction();
-        let t = remap!(value: direction.y(), from: -1_f64, 1_f64, to: 0_f64, 1_f64);
-
-        lerp!(white!(), t, color![0.5, 0.7, 1])
-    }
+    println!("\x07Done, whole program took {:?}", start.elapsed());
 }

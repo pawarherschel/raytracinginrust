@@ -1,5 +1,5 @@
 use crate::config::{HORIZONTAL, LOWER_LEFT_CORNER, VERTICAL};
-use crate::{Point3, Ray, Vec3};
+use crate::prelude::*;
 
 pub struct Camera {
     origin: Point3,
@@ -9,9 +9,10 @@ pub struct Camera {
 }
 
 impl Default for Camera {
+    #[inline(always)]
     fn default() -> Self {
         Camera {
-            origin: crate::config::ORIGIN.clone(),
+            origin: ORIGIN.clone(),
             horizontal: HORIZONTAL.clone(),
             lower_left_corner: LOWER_LEFT_CORNER.clone(),
             vertical: VERTICAL.clone(),
@@ -20,10 +21,12 @@ impl Default for Camera {
 }
 
 impl Camera {
+    #[inline(always)]
     pub fn new() -> Self {
         Self::default()
     }
 
+    #[inline(always)]
     pub fn get_ray(&self, u: f64, v: f64) -> Ray {
         Ray::new(
             self.origin.clone(),

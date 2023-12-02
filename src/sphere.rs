@@ -2,7 +2,8 @@ use std::sync::Arc;
 
 use crate::hit::{HitRecord, Hittable};
 use crate::material::Scatter;
-use crate::{value, Point3, Ray};
+use crate::prelude::*;
+use crate::value;
 
 #[derive(Clone, Debug)]
 pub struct Sphere {
@@ -16,6 +17,7 @@ unsafe impl Send for Sphere {}
 unsafe impl Sync for Sphere {}
 
 impl Sphere {
+    #[inline(always)]
     pub fn new(center: Point3, radius: f64, material: Arc<dyn Scatter>) -> Self {
         Sphere {
             center,
@@ -26,6 +28,7 @@ impl Sphere {
 }
 
 impl Hittable for Sphere {
+    #[inline(always)]
     fn hit(&self, ray: &Ray, t_min: f64, t_max: f64) -> Option<HitRecord> {
         let oc = &ray.origin - &self.center;
         let r_direction = ray.get_direction_denormalized();

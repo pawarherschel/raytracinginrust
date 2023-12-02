@@ -114,13 +114,164 @@ impl Add<Vec3> for Vec3 {
     }
 }
 
-impl AddAssign<Vec3> for Vec3 {
-    fn add_assign(&mut self, rhs: Vec3) {
+macro_rules! cimpl {
+    // A + B
+    (trait: $trait:ty, self: $lhs:ty, other: $rhs:ty, output: $output:ty, fn: $fn:ident, body: $body:block) => {
+        impl $trait<$rhs> for $lhs {
+            type Output = $output;
+
+            fn $fn(self, rhs: $rhs) -> Self::Output $body
+        }
+    };
+    (trait: $trait:ty, ref self: $lhs:ty, other: $rhs:ty, output: $output:ty, fn: $fn:ident, body: $body:block) => {
+        impl $trait<$rhs> for $lhs {
+            type Output = $output;
+
+            fn $fn(&self, rhs: $rhs) -> Self::Output $body
+        }
+    };
+    (trait: $trait:ty, ref mut self: $lhs:ty, other: $rhs:ty, output: $output:ty, fn: $fn:ident, body: $body:block) => {
+        impl $trait<$rhs> for $lhs {
+            type Output = $output;
+
+            fn $fn(&mut self, rhs: $rhs) -> Self::Output $body
+        }
+    };
+    // A += B
+    (trait: $trait:ty, self: $lhs:ty, other: $rhs:ty, fn: $fn:ident, body: $body:block) => {
+        impl $trait<$rhs> for $lhs {
+            fn $fn(self, rhs: $rhs) $body
+        }
+    };
+    (trait: $trait:ty, ref self: $lhs:ty, other: $rhs:ty, fn: $fn:ident, body: $body:block) => {
+        impl $trait<$rhs> for $lhs {
+            fn $fn(&self, rhs: $rhs) $body
+        }
+    };
+    (trait: $trait:ty, ref mut self: $lhs:ty, other: $rhs:ty, fn: $fn:ident, body: $body:block) => {
+        impl $trait<$rhs> for $lhs {
+            fn $fn(&mut self, rhs: $rhs) $body
+        }
+    };
+    // -A
+    (trait: $trait:ty, self: $lhs:ty, output: $output:ty, fn: $fn:ident, body: $body:block) => {
+        impl $trait for $lhs {
+            type Output = $output;
+
+            fn $fn(self) -> Self::Output $body
+        }
+    };
+    (trait: $trait:ty, ref self: $lhs:ty, output: $output:ty, fn: $fn:ident, body: $body:block) => {
+        impl $trait for $lhs {
+            type Output = $output;
+
+            fn $fn(&self) -> Self::Output $body
+        }
+    };
+    (trait: $trait:ty, ref mut self: $lhs:ty, output: $output:ty, fn: $fn:ident, body: $body:block) => {
+        impl $trait for $lhs {
+            type Output = $output;
+
+            fn $fn(&mut self) -> Self::Output $body
+        }
+    };
+    // IDK
+    (trait: $trait:ty, self: $lhs:ty, fn: $fn:ident, body: $body:block) => {
+        impl $trait for $lhs {
+            fn $fn(self) $body
+        }
+    };
+    (trait: $trait:ty, ref self: $lhs:ty, fn: $fn:ident, body: $body:block) => {
+        impl $trait for $lhs {
+            fn $fn(&self) $body
+        }
+    };
+    (trait: $trait:ty, ref mut self: $lhs:ty, fn: $fn:ident, body: $body:block) => {
+        impl $trait for $lhs {
+            fn $fn(&mut self) $body
+        }
+    };
+    // reflect
+    (self: $lhs:ty, other: $rhs:ty, output: $output:ty, fn: $fn:ident, body: $body:block) => {
+        impl $lhs {
+            fn $fn(self, rhs: $rhs) -> $output $body
+        }
+    };
+    (ref self: $lhs:ty, other: $rhs:ty, output: $output:ty, fn: $fn:ident, body: $body:block) => {
+        impl $lhs {
+            fn $fn(&self, rhs: $rhs) -> $output $body
+        }
+    };
+    (ref mut self: $lhs:ty, other: $rhs:ty, output: $output:ty, fn: $fn:ident, body: $body:block) => {
+        impl $lhs {
+            fn $fn(&mut self, rhs: $rhs) -> $output $body
+        }
+    };
+    // IDK
+    (self: $lhs:ty, other: $rhs:ty, fn: $fn:ident, body: $body:block) => {
+        impl $lhs {
+            fn $fn(self, rhs: $rhs) $body
+        }
+    };
+    (ref self: $lhs:ty, other: $rhs:ty, fn: $fn:ident, body: $body:block) => {
+        impl $lhs {
+            fn $fn(&self, rhs: $rhs) $body
+        }
+    };
+    (ref mut self: $lhs:ty, other: $rhs:ty, fn: $fn:ident, body: $body:block) => {
+        impl $lhs {
+            fn $fn(&mut self, rhs: $rhs) $body
+        }
+    };
+    // IDK
+    (self: $lhs:ty, output: $output:ty, fn: $fn:ident, body: $body:block) => {
+        impl $lhs {
+            fn $fn(self) -> $output $body
+        }
+    };
+    (ref self: $lhs:ty, output: $output:ty, fn: $fn:ident, body: $body:block) => {
+        impl $lhs {
+            fn $fn(&self) -> $output $body
+        }
+    };
+    (ref mut self: $lhs:ty, output: $output:ty, fn: $fn:ident, body: $body:block) => {
+        impl $lhs {
+            fn $fn(&mut self) -> $output $body
+        }
+    };
+    // IDK
+    (self: $lhs:ty, fn: $fn:ident, body: $body:block) => {
+        impl $lhs {
+            fn $fn(self) $body
+        }
+    };
+    (ref self: $lhs:ty, fn: $fn:ident, body: $body:block) => {
+        impl $lhs {
+            fn $fn(&self) $body
+        }
+    };
+    (ref mut self: $lhs:ty, fn: $fn:ident, body: $body:block) => {
+        impl $lhs {
+            fn $fn(&mut self) $body
+        }
+    };
+}
+
+trace_macros!(true);
+cimpl!(trait: std::ops::AddAssign, ref mut self: crate::vec3::Vec3, other: crate::vec3::Vec3, fn: add_assign, body: {
         self[0] += rhs[0];
         self[1] += rhs[1];
         self[2] += rhs[2];
-    }
-}
+});
+trace_macros!(false);
+//
+// impl AddAssign<Vec3> for Vec3 {
+//     fn add_assign(&mut self, rhs: Vec3) {
+//         self[0] += rhs[0];
+//         self[1] += rhs[1];
+//         self[2] += rhs[2];
+//     }
+// }
 
 impl Add<Vec3> for &Vec3 {
     type Output = Vec3;

@@ -1,7 +1,7 @@
 use std::sync::Arc;
 
 use crate::material::Scatter;
-use crate::{Point3, Ray, Vec3};
+use crate::prelude::*;
 
 #[derive(Clone, Debug)]
 pub struct HitRecord {
@@ -17,6 +17,7 @@ pub trait Hittable: Send + Sync {
 }
 
 impl HitRecord {
+    #[inline(always)]
     pub fn new(point: Point3, t: f64, material: Arc<dyn Scatter>) -> Self {
         HitRecord {
             point,
@@ -27,6 +28,7 @@ impl HitRecord {
         }
     }
 
+    #[inline(always)]
     pub fn set_front_face(self, ray: &Ray, outward_normal: Vec3) -> Self {
         let mut new = self;
 
