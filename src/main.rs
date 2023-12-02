@@ -2,6 +2,7 @@ use std::fs;
 use std::sync::{mpsc, Arc};
 use std::time::Instant;
 
+use image::Rgb;
 use indicatif::ParallelProgressIterator;
 use rand::Rng;
 use rayon::prelude::*;
@@ -89,8 +90,25 @@ fn main() {
     time_it!("sorting pixels" => pixels.par_sort_by(|(idx1, _), (idx2, _)| idx2.cmp(idx1)));
 
     let output_pixels = time_it!("collecting pixels" =>
-        pixels.into_par_iter().map(|(_, pixel)| pixel.fmt_color().to_string())
+        pixels.clone().into_par_iter().map(|(_, pixel)| pixel.fmt_color().to_string())
     );
+
+    // IMG TEST START
+    use image::*;
+    let rgb_pixels = pixels
+        .clone()
+        .iter()
+        .map(|(_, it)| {
+            let it = it.fmt_u8();
+            // std::process::exit(-1);
+            Rgb::from(it)
+        })
+        .collect::<Vec<_>>();
+    let img = ImageBuffer::from_fn(IMAGE_WIDTH as u32, IMAGE_HEIGHT as u32, |w, h| {
+        rgb_pixels[(h * IMAGE_WIDTH as u32 + w) as usize]
+    });
+    img.save("render.png").unwrap();
+    // IMG TEST END
 
     let output = time_it!("collecting output" =>
         output.into_par_iter().chain(output_pixels).collect::<Vec<String>>()

@@ -132,4 +132,10 @@ impl Vec3 {
         let (r, g, b) = (r as u64, g as u64, b as u64);
         format!("{} {} {}", r, g, b)
     }
+    pub fn fmt_u8(&self) -> [u8; 3] {
+        let Color([r, g, b]) =
+            (256_f64 * ((((self) / SAMPLES_PER_PIXEL as f64).sqrt()).clamp(0.0, 0.999)));
+        let (r, g, b) = (r as u8, g as u8, b as u8);
+        [r, g, b]
+    }
 }
