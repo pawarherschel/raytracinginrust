@@ -1,7 +1,7 @@
 use std::cmp::Ordering;
 use std::fmt::Display;
 use std::ops::{Add, Div, Index, IndexMut, Mul, Neg, Range, Sub};
-use std::simd::f64x4;
+use std::simd::{f64x4, SimdFloat};
 
 use rand::prelude::*;
 
@@ -10,12 +10,12 @@ use crate::prelude::Color;
 use crate::vec3;
 
 #[derive(Clone, Default, Debug, PartialOrd, PartialEq)]
-pub struct Vec3(pub [f64; 3]);
+pub struct Vec3(f64x4);
 
 impl Vec3 {
     #[inline(always)]
     pub fn new(a: f64, b: f64, c: f64) -> Self {
-        Self([a, b, c])
+        Self([a, b, c, 0.0])
     }
     #[inline(always)]
     pub fn new_from_array(array: [f64; 3]) -> Self {
@@ -65,7 +65,7 @@ impl Vec3 {
 impl Vec3 {
     #[inline(always)]
     pub fn dot(&self, rhs: &Vec3) -> f64 {
-        self.x() * rhs.x() + self.y() * rhs.y() + self.z() * rhs.z()
+        (self.0 * rhs.0).reduce_sum()
     }
 
     #[inline(always)]
