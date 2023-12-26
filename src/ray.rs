@@ -1,6 +1,6 @@
-use crate::{color, lerp, remap, white};
 use crate::hit::Hittable;
 use crate::prelude::*;
+use crate::{color, lerp, remap, white};
 
 #[derive(Clone, Default, Debug)]
 pub struct Ray {
